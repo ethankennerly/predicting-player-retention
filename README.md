@@ -68,22 +68,22 @@ Tabulate features:
 
 Sort by uid then time.
 
-TODO:
-
 Group by:
 
     uid or clientIp
 
-Limit last event to 14 days before last event in dataset.
+TODO:
 
 Derive data:
 
-    nth day
     nth event
-    number of events in first week
     current absence time
+    nth day
+    number of events in first week
     time since last reward
     change in reward since last reward
+
+Limit last event to 14 days before last event in dataset.
 
 
 ## Details
@@ -178,7 +178,7 @@ Progress:
 
 Convert to CSV.
 
-    >>> from retention import *
+    >>> from tabulate import *
     >>> text = init + '\r\n' + progress
     >>> fieldnames = ['uid', 'time', 'event']
     >>> csv_text = jsons_to_csv(text, fieldnames)
@@ -186,4 +186,27 @@ Convert to CSV.
     uid,time,event
     0001E7ED9ECB34E9A1D31DE15B334E32001B32BD,1406267046836,progress
     0001E7ED9ECB34E9A1D31DE15B334E32001B32BD,1406267187342,init
+
+
+### TODO: Derive data
+
+Pandas derived times.
+
+    >>> stream = StringIO(csv_text)
+    >>> from retention import *
+    >>> frame = derive_file(stream)
+    >>> frame.head()  #doctest: +NORMALIZE_WHITESPACE
+                                            uid           time     event  \
+    0  0001E7ED9ECB34E9A1D31DE15B334E32001B32BD  1406267046836  progress
+    1  0001E7ED9ECB34E9A1D31DE15B334E32001B32BD  1406267187342      init
+    <BLANKLINE>
+       nth_event  absence_time  day
+    0          0           NaN    0
+    1          1      140506.0    1
+
+MaxU counted the nth row in a group by cumulative count.
+<https://stackoverflow.com/questions/17775935/sql-like-window-functions-in-pandas-row-numbering-in-python-pandas-dataframe/36704460#36704460>
+
+EdChum subtracted time since first row in the group.
+<http://stackoverflow.com/questions/37634786/using-first-row-in-pandas-groupby-dataframe-to-calculate-cumulative-difference>
 
