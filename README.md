@@ -80,8 +80,7 @@ Derive data:
     current absence time
     nth day
     number of events in first week
-    time since last reward
-    change in reward since last reward
+    time since last progress
 
 Limit last event to 14 days before last event in dataset.
 
@@ -190,19 +189,23 @@ Convert to CSV.
 
 ### TODO: Derive data
 
-Pandas derived times.
+Pandas derived times.  Time stamps make sense as milliseconds.
 
-    >>> stream = StringIO(csv_text)
+    >>> progress2_text = "\n0001E7ED9ECB34E9A1D31DE15B334E32001B32BD,1406367187342,progress"
+    >>> stream = StringIO(csv_text + progress2_text)
     >>> from retention import *
     >>> frame = derive_file(stream)
     >>> frame.head()  #doctest: +NORMALIZE_WHITESPACE
                                             uid           time     event  \
     0  0001E7ED9ECB34E9A1D31DE15B334E32001B32BD  1406267046836  progress
     1  0001E7ED9ECB34E9A1D31DE15B334E32001B32BD  1406267187342      init
+    2  0001E7ED9ECB34E9A1D31DE15B334E32001B32BD  1406267287342  progress
     <BLANKLINE>
-       nth_event  absence_time  day
-    0          0           NaN    0
-    1          1      140506.0    1
+       nth_event  absence_time  day  no_progress_times
+    0          0           NaN    0                  0
+    1          1      140506.0    0             140506
+    2          2   100000000.0    1                  0
+
 
 MaxU counted the nth row in a group by cumulative count.
 <https://stackoverflow.com/questions/17775935/sql-like-window-functions-in-pandas-row-numbering-in-python-pandas-dataframe/36704460#36704460>
@@ -210,3 +213,7 @@ MaxU counted the nth row in a group by cumulative count.
 EdChum subtracted time since first row in the group.
 <http://stackoverflow.com/questions/37634786/using-first-row-in-pandas-groupby-dataframe-to-calculate-cumulative-difference>
 
+I subtracted time since last progress for events that were not progress.  Example:
+
+    >>> sum_no_progress_times([100, 125, 200], ['progress', 'init', 'progress'])
+    [0, 25, 0]
