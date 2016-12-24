@@ -3,7 +3,7 @@ See README.md
 """
 
 
-from pandas import read_csv
+from pandas import DataFrame, read_csv
 
 
 def sum_no_progress_times(times, events):
@@ -27,6 +27,22 @@ def derive_file(csv_path):
     frame['day'] = frame['day'].astype(int)
     frame['no_progress_times'] = sum_no_progress_times(frame['time'], frame['event'])
     return frame
+
+
+def aggregate(frame, day_brackets=[7, 13]):
+    template = 'day_%s_%s'
+    brackets = [[0, day_brackets[0] - 1], day_brackets]
+    uid = frame.groupby('uid')
+    properties = {}
+    properties['uid'] = uid.groups.keys()
+    for start, end in brackets:
+        name = template % (start, end)
+        # in_range = uid[(uid['day'] >= start) & (uid['day'] <= end)]
+        in_range = uid.apply(lambda u: u[(u['day'] >= start) & (u['day'] <= end)])
+        properties[name] = in_range['day'].nunique()
+    # return properties
+    aggregated = DataFrame(properties)
+    return aggregated
 
 
 if '__main__' == __name__:

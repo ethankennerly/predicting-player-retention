@@ -72,8 +72,6 @@ Group by:
 
     uid or clientIp
 
-TODO:
-
 Derive data:
 
     nth event
@@ -81,6 +79,8 @@ Derive data:
     nth day
     number of events in first week
     time since last progress
+
+TODO:
 
 Limit last event to 14 days before last event in dataset.
 
@@ -187,7 +187,7 @@ Convert to CSV.
     0001E7ED9ECB34E9A1D31DE15B334E32001B32BD,1406267187342,init
 
 
-### TODO: Derive data
+### Derive times
 
 Pandas derived times.  Time stamps make sense as milliseconds.
 
@@ -199,13 +199,12 @@ Pandas derived times.  Time stamps make sense as milliseconds.
                                             uid           time     event  \
     0  0001E7ED9ECB34E9A1D31DE15B334E32001B32BD  1406267046836  progress
     1  0001E7ED9ECB34E9A1D31DE15B334E32001B32BD  1406267187342      init
-    2  0001E7ED9ECB34E9A1D31DE15B334E32001B32BD  1406267287342  progress
+    2  0001E7ED9ECB34E9A1D31DE15B334E32001B32BD  1406367187342  progress
     <BLANKLINE>
        nth_event  absence_time  day  no_progress_times
     0          0           NaN    0                  0
     1          1      140506.0    0             140506
     2          2   100000000.0    1                  0
-
 
 MaxU counted the nth row in a group by cumulative count.
 <https://stackoverflow.com/questions/17775935/sql-like-window-functions-in-pandas-row-numbering-in-python-pandas-dataframe/36704460#36704460>
@@ -217,3 +216,14 @@ I subtracted time since last progress for events that were not progress.  Exampl
 
     >>> sum_no_progress_times([100, 125, 200], ['progress', 'init', 'progress'])
     [0, 25, 0]
+
+
+### Aggregate bracketed retention
+
+Number of days played in range.  Example:
+
+    >>> aggregated = aggregate(frame)
+    >>> aggregated
+       day_0_6  day_7_13                                       uid
+    0        2         0  0001E7ED9ECB34E9A1D31DE15B334E32001B32BD
+
