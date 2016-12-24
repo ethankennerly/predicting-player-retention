@@ -66,6 +66,10 @@ Tabulate features:
     properties.reward
     time
 
+Sort by uid then time.
+
+TODO:
+
 Group by:
 
     uid or clientIp
@@ -81,9 +85,18 @@ Derive data:
     time since last reward
     change in reward since last reward
 
+
 ## Details
 
 ### Tabulating JSON
+
+Memory usage is limited to one 500 MB file at a time.  Example:
+
+    python retention.py data/part-00000.csv ~/Downloads/mediatonic/part-00000
+
+So this file runs all parts:
+
+    bash retention.sh
 
 Mediatonic data sample has rows of JSON, sometimes with trailing whitespace.
 
@@ -171,6 +184,6 @@ Convert to CSV.
     >>> csv_text = jsons_to_csv(text, fieldnames)
     >>> print(csv_text)
     uid,time,event
-    0001E7ED9ECB34E9A1D31DE15B334E32001B32BD,1406267187342,init
     0001E7ED9ECB34E9A1D31DE15B334E32001B32BD,1406267046836,progress
+    0001E7ED9ECB34E9A1D31DE15B334E32001B32BD,1406267187342,init
 
