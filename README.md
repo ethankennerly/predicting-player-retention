@@ -82,7 +82,11 @@ Derive data:
 
 TODO:
 
+Classify by decision tree.
+
 Limit last event to 14 days before last event in dataset.
+
+Randomly assign user to training data and test data.
 
 
 ## Details
@@ -192,7 +196,8 @@ Convert to CSV.
 Pandas derived times.  Time stamps make sense as milliseconds.
 
     >>> progress2_text = "\n0001E7ED9ECB34E9A1D31DE15B334E32001B32BD,1406367187342,progress"
-    >>> stream = StringIO(csv_text + progress2_text)
+    >>> user2_text = "\n2,100,progress\n2,1000000000,progress"
+    >>> stream = StringIO(csv_text + progress2_text + user2_text)
     >>> from retention import *
     >>> frame = derive_file(stream)
     >>> frame.head()  #doctest: +NORMALIZE_WHITESPACE
@@ -200,11 +205,15 @@ Pandas derived times.  Time stamps make sense as milliseconds.
     0  0001E7ED9ECB34E9A1D31DE15B334E32001B32BD  1406267046836  progress
     1  0001E7ED9ECB34E9A1D31DE15B334E32001B32BD  1406267187342      init
     2  0001E7ED9ECB34E9A1D31DE15B334E32001B32BD  1406367187342  progress
+    3                                         2            100  progress
+    4                                         2     1000000000  progress
     <BLANKLINE>
-       nth_event  absence_time  day  no_progress_times
-    0          0           NaN    0                  0
-    1          1      140506.0    0             140506
-    2          2   100000000.0    1                  0
+       nth_event  absence_time  day  no_progress_times  bracket
+    0          0           NaN    0                  0        0
+    1          1      140506.0    0             140506        0
+    2          2   100000000.0    1                  0        0
+    3          0           NaN    0                  0        0
+    4          1   999999900.0   11                  0        1
 
 MaxU counted the nth row in a group by cumulative count.
 <https://stackoverflow.com/questions/17775935/sql-like-window-functions-in-pandas-row-numbering-in-python-pandas-dataframe/36704460#36704460>
@@ -222,8 +231,17 @@ I subtracted time since last progress for events that were not progress.  Exampl
 
 Number of days played in range.  Example:
 
-    >>> aggregated = aggregate(frame)
-    >>> aggregated
+    >>> retained = aggregate(frame)
+    >>> retained
        day_0_6  day_7_13                                       uid
-    0        2         0  0001E7ED9ECB34E9A1D31DE15B334E32001B32BD
+    0        1         1                                         2
+    1        2         0  0001E7ED9ECB34E9A1D31DE15B334E32001B32BD
+
+
+### TODO: Decision tree classifies retained
+
+    >>> # classifier = decision_tree(retained)
+    >>> # classifier.predict_proba([0])
+    array([[ 1.]])
+
 
