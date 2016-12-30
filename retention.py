@@ -3,6 +3,7 @@ See README.md
 """
 
 from collections import defaultdict
+from random import seed, shuffle
 from StringIO import StringIO
 from pandas import DataFrame, read_csv
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
@@ -20,7 +21,18 @@ def to_csv(frame):
     return stream.getvalue().strip()
 
 
-def filter_user_bracket_file(csv_path, day_brackets=day_brackets, output_path=None):
+def sample_users(user_time, user_count, random_seed=None):
+    uniques = user_time['uid'].unique()
+    if random_seed is not None:
+        seed(random_seed)
+    shuffle(uniques)
+    sample_users = uniques[:user_count]
+    sample = user_time[user_time['uid'].isin(sample_users)]
+    return sample
+
+
+def filter_user_bracket_file(csv_path, day_brackets=day_brackets,
+        output_path=None, user_sample=-1, random_seed=None):
     day = day_brackets[-1] + 1
     time = day * time_per_day
     user_time = read_csv(csv_path)
@@ -30,6 +42,8 @@ def filter_user_bracket_file(csv_path, day_brackets=day_brackets, output_path=No
     user_time['first'] = users['time'].transform('first')
     user_time = user_time[user_time['first'] <= time_limit]
     del user_time['first']
+    if 1 <= user_sample:
+        user_time = sample_users(user_time, user_sample, random_seed)
     if output_path:
         user_time.to_csv(output_path, index=False)
         return output_path
@@ -125,10 +139,13 @@ def retention_csv(args):
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('csv_path', nargs='?', help='Where to read CSV.')
     parser.add_argument('--filter_path', help='Just filter CSV to this file.')
+    parser.add_argument('--user_sample', default=-1, type=int, help='During filter, randomly sample up to this many users.')
+    parser.add_argument('--random_seed', default=None, help='Consistently reproduce the same random sample with this seed string.')
     parsed = parser.parse_args(args)
     if parsed.csv_path:
         if parsed.filter_path:
-            return filter_user_bracket_file(parsed.csv_path, output_path=parsed.filter_path)
+            return filter_user_bracket_file(parsed.csv_path, output_path=parsed.filter_path,
+                user_sample=parsed.user_sample, random_seed=parsed.random_seed)
         else:
             return decision_tree_retain_1_file(parsed.csv_path)
 
