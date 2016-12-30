@@ -4,7 +4,8 @@ See README.md
 
 from collections import defaultdict
 from pandas import DataFrame, read_csv
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, export_graphviz
+from pydotplus import graph_from_dot_data
 
 
 day_brackets = [7, 13]
@@ -46,11 +47,16 @@ def aggregate(frame, day_brackets=day_brackets):
     for uid in properties['uid']:
         for name in names:
             properties[name].append(0)
+    names_length = len(names)
     for uid, bracket in uid_bracket.groups:
         uid_index = properties['uid'].index(uid)
-        name = names[bracket]
-        days = frame[(frame['uid'] == uid) & (frame['bracket'] == bracket)]['day']
-        properties[name][uid_index] = days.nunique()
+        if bracket < names_length:
+            try:
+                name = names[bracket]
+                days = frame[(frame['uid'] == uid) & (frame['bracket'] == bracket)]['day']
+                properties[name][uid_index] = days.nunique()
+            except:
+                print('aggregate: bracket %r not in names %r' % (bracket, names))
     aggregated = DataFrame(properties)
     return aggregated
 
@@ -67,17 +73,26 @@ def format_names(day_brackets):
 def decision_tree(aggregated, day_brackets=day_brackets):
     classifier = DecisionTreeClassifier()
     names = format_names(day_brackets)
-    features = [aggregated[names[0]]]
-    classes = aggregated[names[1]]
-    print('features %r\nclasses %r' % (features, classes))
+    features = aggregated[names[0]].values
+    features = [[feature] for feature in features]
+    classes = aggregated[names[1]].values
+    ## print('features\n%r\nclasses\n%r' % (features, classes))
     classifier.fit(features, classes)
     return classifier
+
+
+def write_pdf(classifier, pdf_path):
+    dot_data = export_graphviz(classifier, out_file=None)
+    graph = graph_from_dot_data(dot_data)
+    graph.write_pdf(pdf_path)
+    print('Decision tree graphed in file %r' % pdf_path)
 
 
 def decision_tree_retain_1_file(csv_path):
     frame = derive_file(csv_path)
     retained = aggregate(frame)
     classifier = decision_tree(retained)
+    write_pdf(classifier, csv_path + '.pdf')
     return classifer.predict_proba([1])
 
 

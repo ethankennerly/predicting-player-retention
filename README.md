@@ -240,8 +240,35 @@ Number of days played in range.  Example:
 
 ### TODO: Decision tree classifies retained
 
-    >>> # classifier = decision_tree(retained)
-    >>> # classifier.predict_proba([0])
-    array([[ 1.]])
+    >>> classifier = decision_tree(retained)
+    >>> classifier.predict_proba([0])
+    array([[ 0.,  1.]])
+
+
+### Install GraphViz to write PDF
+
+Windows:
+<http://www.graphviz.org/Download_windows.php>
+
+     pip install pydotplus
+
+Include directory of gvedit.exe in system path.
+<http://stackoverflow.com/questions/18438997/why-is-pydot-unable-to-find-graphvizs-executables-in-windows-8>
+
+This path is near beginning of paths.
+Restart all bash sessions.
+<http://superuser.com/questions/607533/windows-git-bash-bash-path-to-read-windows-path-system-variable/939749#939749>
+
+Test GraphViz installation with:
+
+     python decision_tree_example.py
+
+     Probability first iris is in each class of irises: array([[ 1.,  0.,  0.]])
+     Decision tree graphed in file 'test/iris.pdf'
+
+### Write PDF
+
+    >>> write_pdf(classifier, 'test/retained.pdf')
+     Decision tree graphed in file 'test/retained.pdf'
 
 
