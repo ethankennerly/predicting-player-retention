@@ -80,13 +80,15 @@ Derive data:
     number of events in first week
     time since last progress
 
-TODO:
-
 Classify by decision tree.
 
-Limit last event to 14 days before last event in dataset.
+TODO:
 
-Randomly assign user to training data and test data.
+Filter CSV to users whose first event was at least 14 days before the last event in dataset.
+
+Randomly assign 80% users to training CSV and 20% to test CSV.
+
+Generalize uid,time,event column names.
 
 
 ## Details
@@ -195,11 +197,12 @@ Convert to CSV.
 
 Pandas derived times.  Time stamps make sense as milliseconds.
 
-    >>> progress2_text = "\n0001E7ED9ECB34E9A1D31DE15B334E32001B32BD,1406367187342,progress"
-    >>> user2_text = "\n2,100,progress\n2,1000000000,progress"
-    >>> stream = StringIO(csv_text + progress2_text + user2_text)
+    >>> progress_2_text = "\n0001E7ED9ECB34E9A1D31DE15B334E32001B32BD,1406367187342,progress"
+    >>> user_2_text = "\n2,100,progress\n2,1000000000,progress"
+    >>> user_2_csv = csv_text + progress_2_text + user_2_text
+    >>> user_2_stream = StringIO(user_2_csv)
     >>> from retention import *
-    >>> frame = derive_file(stream)
+    >>> frame = derive_file(user_2_stream)
     >>> frame.head()  #doctest: +NORMALIZE_WHITESPACE
                                             uid           time     event  \
     0  0001E7ED9ECB34E9A1D31DE15B334E32001B32BD  1406267046836  progress
@@ -238,7 +241,7 @@ Number of days played in range.  Example:
     1        2         0  0001E7ED9ECB34E9A1D31DE15B334E32001B32BD
 
 
-### TODO: Decision tree classifies retained
+### Decision tree classifies retained
 
     >>> classifier = decision_tree(retained)
     >>> classifier.predict_proba([0])
@@ -269,6 +272,38 @@ Test GraphViz installation with:
 ### Write PDF
 
     >>> write_pdf(classifier, 'test/retained.pdf')
-     Decision tree graphed in file 'test/retained.pdf'
+    Decision tree graphed in file 'test/retained.pdf'
 
+### Filter users to retention bracket
+
+Suppose the bracket of retention is 7 to 13 days.
+If a user started less than 14 days before the end of data collection, the user might not have had the full bracket available.
+So I filtered to users whose first event was at least a full bracket before the last event in sample dataset.
+
+For example, in the two users above, user 2's first event is 1970, whereas the first user's event is less than 14 days before the end of that sample, so only user 2 remains.
+
+    >>> user_2_stream = StringIO(user_2_csv)
+    >>> print(filter_user_bracket_file(user_2_stream, day_brackets, output_path=None))
+    uid,time,event
+    2,100,progress
+    2,1000000000,progress
+
+Times are in milliseconds.  If your times are not milliseconds, you could modify `time_per_day`.
+
+    >>> time_per_day
+    86400000
+
+This can be run from the command line.
+
+    python retention.py --filter_path test/user_2_opportunity.csv test/user_2.csv
+
+Simulated here:
+
+    >>> retention_csv_string('--filter_path test/user_2_opportunity.csv test/user_2.csv')
+    'test/user_2_opportunity.csv'
+    >>> print(open('test/user_2_opportunity.csv').read())
+    uid,time,event
+    2,100,progress
+    2,1000000000,progress
+    <BLANKLINE>
 
