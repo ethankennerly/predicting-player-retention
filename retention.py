@@ -21,18 +21,23 @@ def to_csv(frame):
     return stream.getvalue().strip()
 
 
-def sample_users(user_time, user_count, random_seed=None):
+def sample_users(user_time, percent, random_seed=None):
     uniques = user_time['uid'].unique()
     if random_seed is not None:
         seed(random_seed)
     shuffle(uniques)
-    sample_users = uniques[:user_count]
-    sample = user_time[user_time['uid'].isin(sample_users)]
-    return sample
+    fraction = percent / 100.0
+    user_count = int(round(len(uniques) * fraction))
+    a_sample_users = uniques[:user_count]
+    b_sample_users = uniques[user_count:]
+    a_sample = user_time[user_time['uid'].isin(a_sample_users)]
+    b_sample = user_time[user_time['uid'].isin(b_sample_users)]
+    samples = [a_sample, b_sample]
+    return samples
 
 
 def filter_user_bracket_file(csv_path, day_brackets=day_brackets,
-        output_path=None, user_sample=-1, random_seed=None):
+        output_path=None, sample_percent=-1, random_seed=None):
     day = day_brackets[-1] + 1
     time = day * time_per_day
     user_time = read_csv(csv_path)
@@ -42,13 +47,19 @@ def filter_user_bracket_file(csv_path, day_brackets=day_brackets,
     user_time['first'] = users['time'].transform('first')
     user_time = user_time[user_time['first'] <= time_limit]
     del user_time['first']
-    if 1 <= user_sample:
-        user_time = sample_users(user_time, user_sample, random_seed)
-    if output_path:
-        user_time.to_csv(output_path, index=False)
-        return output_path
-    else:
-        return to_csv(user_time)
+    samples = [user_time]
+    output_paths = [output_path]
+    results = []
+    if 0 <= sample_percent:
+        samples = sample_users(user_time, sample_percent, random_seed)
+        output_paths.append(output_path + '.test.csv')
+    for sample, output_path in zip(samples, output_paths):
+        if output_path:
+            sample.to_csv(output_path, index=False)
+            results.append(output_path)
+        else:
+            results.append(to_csv(user_time))
+    return '\n'.join(results)
 
 
 def sum_no_progress_times(times, events):
@@ -114,7 +125,6 @@ def decision_tree(aggregated, day_brackets=day_brackets):
     features = aggregated[names[0]].values
     features = [[feature] for feature in features]
     classes = aggregated[names[1]].values
-    ## print('features\n%r\nclasses\n%r' % (features, classes))
     classifier.fit(features, classes)
     return classifier
 
@@ -139,13 +149,13 @@ def retention_csv(args):
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('csv_path', nargs='?', help='Where to read CSV.')
     parser.add_argument('--filter_path', help='Just filter CSV to this file.')
-    parser.add_argument('--user_sample', default=-1, type=int, help='During filter, randomly sample up to this many users.')
+    parser.add_argument('--sample_percent', default=-1, type=int, help='During filter, randomly sample up to this percent of users.  Example 80 represents 80%.  The other 20% are placed in a ".test.csv"')
     parser.add_argument('--random_seed', default=None, help='Consistently reproduce the same random sample with this seed string.')
     parsed = parser.parse_args(args)
     if parsed.csv_path:
         if parsed.filter_path:
             return filter_user_bracket_file(parsed.csv_path, output_path=parsed.filter_path,
-                user_sample=parsed.user_sample, random_seed=parsed.random_seed)
+                sample_percent=parsed.sample_percent, random_seed=parsed.random_seed)
         else:
             return decision_tree_retain_1_file(parsed.csv_path)
 

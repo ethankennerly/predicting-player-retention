@@ -84,11 +84,13 @@ Classify by decision tree.
 
 Filter CSV to users whose first event was at least 14 days before the last event in dataset.
 
-Randomly sample CSV rows of 10 users with an opportunity to be retained.  
+Randomly sample CSV rows of 20% users with an opportunity to be retained in separate test CSV.  
 
 TODO:
 
-Randomly assign 80% users to training CSV and 20% to test CSV.
+Predict retention in test CSV.  Compare to actual retention.
+
+For a baseline of noise, predict and compare random data.
 
 Generalize uid,time,event column names.
 
@@ -312,36 +314,53 @@ Here is an example, simulating command line arguments:
     <BLANKLINE>
 
 
-### Randomly sample JSON
+### Sample training and test CSVs
+
+I extracted a sample of 20 percent of users to test.
 
 Analyzing a sample of hundreds of thousands of rows took several minutes on my computer.
 
-To quickly test end-to-end, I extracted a sample of 10 users.
+The smaller sample speeds up testing end-to-end.
 
-    python retention.py --filter_path test/user_2_opportunity.csv --user_sample 2 --random_seed 2 test/user_4.csv
+It also checks the validity of the analysis.
+
+Here is a tiny example of 80% users.  The other 20%, rounded to the nearest whole, are saved in a test CSV.
+
+    python retention.py --filter_path test/user_2_opportunity.csv --sample_percent 80 --random_seed 2 test/user_4.csv
 
 To test this consistently, I seeded random number generator.
 
-    >>> retention_csv_string('--filter_path test/user_2_4_opportunity.csv --user_sample 2 --random_seed 2 test/user_4.csv')
-    'test/user_2_4_opportunity.csv'
+    >>> print(retention_csv_string('--filter_path test/user_2_4_opportunity.csv --sample_percent 80 --random_seed 2 test/user_4.csv'))
+    test/user_2_4_opportunity.csv
+    test/user_2_4_opportunity.csv.test.csv
     >>> print(open('test/user_2_4_opportunity.csv').read())
     uid,time,event
     2,200,progress
     2,2000000000,progress
     4,400,progress
     <BLANKLINE>
+    >>> print(open('test/user_2_4_opportunity.csv.test.csv').read())
+    uid,time,event
+    3,300,progress
+    <BLANKLINE>
 
 Different seed may yield different users.
 
-    >>> retention_csv_string('--filter_path test/user_3_4_opportunity.csv --user_sample 2 --random_seed 7 test/user_4.csv')
-    'test/user_3_4_opportunity.csv'
+    >>> print(retention_csv_string('--filter_path test/user_3_4_opportunity.csv --sample_percent 80 --random_seed 7 test/user_4.csv'))
+    test/user_3_4_opportunity.csv
+    test/user_3_4_opportunity.csv.test.csv
     >>> print(open('test/user_3_4_opportunity.csv').read())
     uid,time,event
     3,300,progress
     4,400,progress
     <BLANKLINE>
+    >>> print(open('test/user_3_4_opportunity.csv.test.csv').read())
+    uid,time,event
+    2,200,progress
+    2,2000000000,progress
+    <BLANKLINE>
 
-Pandas got unique users.
+Pandas extracted unique users.
 <http://chrisalbon.com/python/pandas_list_unique_values_in_column.html>
 And filtered rows by that sample of users.
 <http://stackoverflow.com/questions/12096252/use-a-list-of-values-to-select-rows-from-a-pandas-dataframe>
