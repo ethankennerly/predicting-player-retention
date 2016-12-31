@@ -8,6 +8,7 @@ from StringIO import StringIO
 from pandas import DataFrame, read_csv
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
 from pydotplus import graph_from_dot_data
+from numpy import array
 
 
 day_brackets = [7, 13]
@@ -134,8 +135,8 @@ def format_names(day_brackets):
 def decision_tree(aggregated, day_brackets=day_brackets):
     classifier = DecisionTreeClassifier()
     names = format_names(day_brackets)
-    features = aggregated[names[0]].values
-    features = [[feature] for feature in features]
+    features = aggregated[names[0]].values.reshape((-1, 1))
+    ## print 'features:\n%r' % features
     classes = aggregated[names[1]].values
     classifier.fit(features, classes)
     return classifier
@@ -149,11 +150,11 @@ def write_pdf(classifier, pdf_path):
 
 
 def decision_tree_retain_1_file(csv_path):
-    frame = derive_file(csv_path)
-    retained = aggregate(frame)
+    retained = read_csv(csv_path)
     classifier = decision_tree(retained)
     write_pdf(classifier, csv_path + '.pdf')
-    return classifier.predict_proba([1])
+    example_features = [[1]]
+    return 'Example retention prediction if 1 day: %r' % classifier.predict_proba(example_features)
 
 
 def retention_csv(args):

@@ -202,6 +202,16 @@ Convert to CSV.
     0001E7ED9ECB34E9A1D31DE15B334E32001B32BD,1406267046836,progress
     0001E7ED9ECB34E9A1D31DE15B334E32001B32BD,1406267187342,init
 
+### Overview of decision tree
+
+    python retention.py test/user_retention.csv
+
+Simulated command line arguments:
+
+    >>> from retention import *
+    >>> print(retention_csv_string('test/user_retention.csv'))
+    Decision tree graphed in file 'test/user_retention.csv.pdf'
+    Example retention prediction if 1 day: array([[ 1.,  0.]])
 
 ### Derive times
 
@@ -211,7 +221,6 @@ Pandas derived times.  Time stamps make sense as milliseconds.
     >>> user_2_text = "\n2,100,progress\n2,1000000000,progress"
     >>> user_2_csv = csv_text + progress_2_text + user_2_text
     >>> user_2_stream = StringIO(user_2_csv)
-    >>> from retention import *
     >>> frame = derive_file(user_2_stream)
     >>> frame.head()  #doctest: +NORMALIZE_WHITESPACE
                                             uid           time     event  \
@@ -255,7 +264,7 @@ Number of days played in range.  Example:
 
 Format events into user days.
 
-    python retention.py aggregate_path test/user_retention.csv test/user_4.csv
+    python retention.py --aggregate_path test/user_retention.csv test/user_4.csv
 
 Example:
 
@@ -280,9 +289,17 @@ Example:
 ### Decision tree classifies retained
 
     >>> classifier = decision_tree(retained)
-    >>> classifier.predict_proba([0])
+
+To avoid deprecation warning, I reshaped the single feature of days during first bracket.
+And I reshaped the sample that is being predicted to be a nested array.
+
+    >>> classifier.predict_proba([[0]])
     array([[ 0.,  1.]])
 
+    C:\Python27\lib\site-packages\sklearn\utils\validation.py:395: DeprecationWarning: Passing 1d arrays as data is deprecated in 0.17 and will raise ValueError in 0.19. Reshape your data either using X.reshape(-1, 1) if your data has a single feature or X.reshape(1, -1) if it contains a single sample.
+      DeprecationWarning)
+
+<http://stackoverflow.com/questions/37798056/getting-deprecation-warning-in-sklearn-over-1d-array-despite-not-having-a-1d-ar>
 
 ### Install GraphViz to write PDF
 
