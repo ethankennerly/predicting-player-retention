@@ -86,11 +86,17 @@ Filter CSV to users whose first event was at least 14 days before the last event
 
 Randomly sample CSV rows of 20% users with an opportunity to be retained in separate test CSV.  
 
+Aggregate user retention CSV.
+
 TODO:
 
-Predict retention in test CSV.  Compare to actual retention.
+Cross-validate:  Predict retention in test CSV.  Compare to actual retention.
+
+<http://scikit-learn.org/stable/modules/cross_validation.html>
 
 For a baseline of noise, predict and compare random data.
+
+<http://scikit-learn.org/stable/modules/model_evaluation.html>
 
 Generalize uid,time,event column names.
 
@@ -240,9 +246,35 @@ Number of days played in range.  Example:
 
     >>> retained = aggregate(frame)
     >>> retained
-       day_0_6  day_7_13                                       uid
-    0        1         1                                         2
-    1        2         0  0001E7ED9ECB34E9A1D31DE15B334E32001B32BD
+                                            uid  day_0_6  day_7_13
+    0                                         2        1         1
+    1  0001E7ED9ECB34E9A1D31DE15B334E32001B32BD        2         0
+
+
+### Aggregate user retention CSV
+
+Format events into user days.
+
+    python retention.py aggregate_path test/user_retention.csv test/user_4.csv
+
+Example:
+
+    >>> print(retention_csv_string('--aggregate_path test/user_retention.csv test/user_4.csv'))
+    test/user_retention.csv
+    >>> print(open('test/user_retention.csv.change.csv').read())
+    uid,time,event,nth_event,absence_time,day,no_progress_times,bracket
+    2,200,progress,0,,0,0,0
+    2,604800000,progress,1,604799800.0,6,0,0
+    2,604800200,progress,2,200.0,7,0,1
+    3,300,progress,0,,0,0,0
+    4,400,progress,0,,0,0,0
+    <BLANKLINE>
+    >>> print(open('test/user_retention.csv').read())
+    uid,day_0_6,day_7_13
+    2,2,1
+    3,1,0
+    4,1,0
+    <BLANKLINE>
 
 
 ### Decision tree classifies retained
@@ -308,7 +340,8 @@ Here is an example, simulating command line arguments:
     >>> print(open('test/user_3_opportunity.csv').read())
     uid,time,event
     2,200,progress
-    2,2000000000,progress
+    2,604800000,progress
+    2,604800200,progress
     3,300,progress
     4,400,progress
     <BLANKLINE>
@@ -336,7 +369,8 @@ To test this consistently, I seeded random number generator.
     >>> print(open('test/user_2_4_opportunity.csv').read())
     uid,time,event
     2,200,progress
-    2,2000000000,progress
+    2,604800000,progress
+    2,604800200,progress
     4,400,progress
     <BLANKLINE>
     >>> print(open('test/user_2_4_opportunity.csv.test.csv').read())
@@ -357,7 +391,8 @@ Different seed may yield different users.
     >>> print(open('test/user_3_4_opportunity.csv.test.csv').read())
     uid,time,event
     2,200,progress
-    2,2000000000,progress
+    2,604800000,progress
+    2,604800200,progress
     <BLANKLINE>
 
 Pandas extracted unique users.

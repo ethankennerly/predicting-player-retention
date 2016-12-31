@@ -106,8 +106,20 @@ def aggregate(frame, day_brackets=day_brackets):
                 properties[name][uid_index] = days.nunique()
             except:
                 print('aggregate: bracket %r not in names %r' % (bracket, names))
-    aggregated = DataFrame(properties)
+    columns = ['uid']
+    columns.extend(names)
+    aggregated = DataFrame(properties, columns=columns)
     return aggregated
+
+
+def aggregate_file(csv_path, output_path):
+    event_text = filter_user_bracket_file(csv_path)
+    event_stream = StringIO(event_text)
+    change_frame = derive_file(event_stream)
+    change_frame.to_csv(output_path + '.change.csv', index=False)
+    retained = aggregate(change_frame)
+    retained.to_csv(output_path, index=False)
+    return output_path
 
 
 def format_names(day_brackets):
@@ -149,15 +161,22 @@ def retention_csv(args):
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('csv_path', nargs='?', help='Where to read CSV.')
     parser.add_argument('--filter_path', help='Just filter CSV to this file.')
+    parser.add_argument('--aggregate_path', help='Aggregate users CSV to this file.  Filter users who have a full bracket to potentially be retained.')
     parser.add_argument('--sample_percent', default=-1, type=int, help='During filter, randomly sample up to this percent of users.  Example 80 represents 80%.  The other 20% are placed in a ".test.csv"')
     parser.add_argument('--random_seed', default=None, help='Consistently reproduce the same random sample with this seed string.')
+    parser.add_argument('--test', action='store_true', help='Check examples in README.md.')
     parsed = parser.parse_args(args)
     if parsed.csv_path:
-        if parsed.filter_path:
+        if parsed.aggregate_path:
+            return aggregate_file(parsed.csv_path, parsed.aggregate_path)
+        elif parsed.filter_path:
             return filter_user_bracket_file(parsed.csv_path, output_path=parsed.filter_path,
                 sample_percent=parsed.sample_percent, random_seed=parsed.random_seed)
         else:
             return decision_tree_retain_1_file(parsed.csv_path)
+    if parsed.test:
+        from doctest import testfile
+        testfile('README.md')
 
 
 def retention_csv_string(args_text):
@@ -168,5 +187,3 @@ def retention_csv_string(args_text):
 if '__main__' == __name__:
     from sys import argv
     retention_csv(argv[1:])
-    from doctest import testfile
-    testfile('README.md')
