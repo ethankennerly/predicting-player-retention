@@ -84,7 +84,7 @@ Classify by decision tree.
 
 Filter CSV to users whose first event was at least 14 days before the last event in dataset.
 
-Randomly sample CSV rows of 20% users with an opportunity to be retained in separate test CSV.  
+Randomly sample CSV rows of 4% users with an opportunity to be retained in separate test CSV.
 
 Aggregate user retention CSV.
 
@@ -94,9 +94,9 @@ Standardize scale.
 
 <http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html>
 
-TODO:
-
 Reuse SciKit to split data.
+
+TODO:
 
 For a baseline of noise, predict and compare random data.
 
@@ -374,13 +374,16 @@ Here is an example, simulating command line arguments:
 
 ### Sample training and test CSVs
 
-I extracted a sample of 20 percent of users to test.
+My function `fit_score` wraps SciKit utility to split training and test data.
+<http://scikit-learn.org/stable/modules/cross_validation.html>
+
+I extracted a sample of 4 percent of users to quickly test.
 
 Analyzing a sample of hundreds of thousands of rows took several minutes on my computer.
 
 The smaller sample speeds up testing end-to-end.
 
-It also checks the validity of the analysis.
+SciKit already has another method to test the validity of the data.
 
 Here is a tiny example of 80% users.  The other 20%, rounded to the nearest whole, are saved in a test CSV.
 
