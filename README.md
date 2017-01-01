@@ -90,6 +90,8 @@ Aggregate user retention CSV.
 
 TODO:
 
+Split training and test data.  Score the model.
+
 Cross-validate:  Predict retention in test CSV.  Compare to actual retention.
 
 <http://scikit-learn.org/stable/modules/cross_validation.html>
@@ -211,7 +213,7 @@ Simulated command line arguments:
     >>> from retention import *
     >>> print(retention_csv_string('test/user_retention.csv'))
     Decision tree graphed in file 'test/user_retention.csv.pdf'
-    Example retention prediction if 1 day: array([[ 1.,  0.]])
+    Decision tree score: 0.50
 
 ### Derive times
 
@@ -288,13 +290,13 @@ Example:
 
 ### Decision tree classifies retained
 
-    >>> classifier = decision_tree(retained)
+    >>> classifier, score = decision_tree(retained)
 
 To avoid deprecation warning, I reshaped the single feature of days during first bracket.
 And I reshaped the sample that is being predicted to be a nested array.
 
     >>> classifier.predict_proba([[0]])
-    array([[ 0.,  1.]])
+    array([[ 1.]])
 
     C:\Python27\lib\site-packages\sklearn\utils\validation.py:395: DeprecationWarning: Passing 1d arrays as data is deprecated in 0.17 and will raise ValueError in 0.19. Reshape your data either using X.reshape(-1, 1) if your data has a single feature or X.reshape(1, -1) if it contains a single sample.
       DeprecationWarning)

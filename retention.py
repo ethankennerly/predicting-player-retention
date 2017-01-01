@@ -6,9 +6,9 @@ from collections import defaultdict
 from random import seed, shuffle
 from StringIO import StringIO
 from pandas import DataFrame, read_csv
+from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
 from pydotplus import graph_from_dot_data
-from numpy import array
 
 
 day_brackets = [7, 13]
@@ -132,14 +132,21 @@ def format_names(day_brackets):
     return names
 
 
+def fit_score(classifier, features, classes, random_state=None):
+    X_train, X_test, y_train, y_test = train_test_split(
+        features, classes, test_size=0.4, random_state=random_state)
+    classifier = classifier.fit(X_train, y_train)
+    score = classifier.score(X_test, y_test)
+    return classifier, score
+
+
 def decision_tree(aggregated, day_brackets=day_brackets):
     classifier = DecisionTreeClassifier()
     names = format_names(day_brackets)
     features = aggregated[names[0]].values.reshape((-1, 1))
     ## print 'features:\n%r' % features
     classes = aggregated[names[1]].values
-    classifier.fit(features, classes)
-    return classifier
+    return fit_score(classifier, features, classes)
 
 
 def write_pdf(classifier, pdf_path):
@@ -151,10 +158,9 @@ def write_pdf(classifier, pdf_path):
 
 def decision_tree_retain_1_file(csv_path):
     retained = read_csv(csv_path)
-    classifier = decision_tree(retained)
+    classifier, score = decision_tree(retained)
     write_pdf(classifier, csv_path + '.pdf')
-    example_features = [[1]]
-    return 'Example retention prediction if 1 day: %r' % classifier.predict_proba(example_features)
+    return 'Decision tree score: %0.2f' % score
 
 
 def retention_csv(args):
@@ -187,4 +193,4 @@ def retention_csv_string(args_text):
 
 if '__main__' == __name__:
     from sys import argv
-    retention_csv(argv[1:])
+    print(retention_csv(argv[1:]))
