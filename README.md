@@ -88,17 +88,23 @@ Randomly sample CSV rows of 20% users with an opportunity to be retained in sepa
 
 Aggregate user retention CSV.
 
-TODO:
-
 Split training and test data.  Score the model.
 
-Cross-validate:  Predict retention in test CSV.  Compare to actual retention.
+Standardize scale.
 
-<http://scikit-learn.org/stable/modules/cross_validation.html>
+<http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html>
+
+TODO:
+
+Reuse SciKit to split data.
 
 For a baseline of noise, predict and compare random data.
 
 <http://scikit-learn.org/stable/modules/model_evaluation.html>
+
+Cross-validate:  Predict retention in test CSV.  Compare to actual retention.
+
+<http://scikit-learn.org/stable/modules/cross_validation.html>
 
 Generalize uid,time,event column names.
 
@@ -211,7 +217,7 @@ Convert to CSV.
 Simulated command line arguments:
 
     >>> from retention import *
-    >>> print(retention_csv_string('test/user_retention.csv'))
+    >>> print(retention_csv_string('--random_state 0 test/user_retention.csv'))
     Decision tree graphed in file 'test/user_retention.csv.pdf'
     Decision tree score: 0.50
 
@@ -378,11 +384,11 @@ It also checks the validity of the analysis.
 
 Here is a tiny example of 80% users.  The other 20%, rounded to the nearest whole, are saved in a test CSV.
 
-    python retention.py --filter_path test/user_2_opportunity.csv --sample_percent 80 --random_seed 2 test/user_4.csv
+    python retention.py --filter_path test/user_2_opportunity.csv --sample_percent 80 --random_state 2 test/user_4.csv
 
 To test this consistently, I seeded random number generator.
 
-    >>> print(retention_csv_string('--filter_path test/user_2_4_opportunity.csv --sample_percent 80 --random_seed 2 test/user_4.csv'))
+    >>> print(retention_csv_string('--filter_path test/user_2_4_opportunity.csv --sample_percent 80 --random_state 2 test/user_4.csv'))
     test/user_2_4_opportunity.csv
     test/user_2_4_opportunity.csv.test.csv
     >>> print(open('test/user_2_4_opportunity.csv').read())
@@ -399,7 +405,7 @@ To test this consistently, I seeded random number generator.
 
 Different seed may yield different users.
 
-    >>> print(retention_csv_string('--filter_path test/user_3_4_opportunity.csv --sample_percent 80 --random_seed 7 test/user_4.csv'))
+    >>> print(retention_csv_string('--filter_path test/user_3_4_opportunity.csv --sample_percent 80 --random_state 7 test/user_4.csv'))
     test/user_3_4_opportunity.csv
     test/user_3_4_opportunity.csv.test.csv
     >>> print(open('test/user_3_4_opportunity.csv').read())

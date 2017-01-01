@@ -8,6 +8,7 @@ from StringIO import StringIO
 from pandas import DataFrame, read_csv
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
+from sklearn.preprocessing import StandardScaler
 from pydotplus import graph_from_dot_data
 
 
@@ -22,10 +23,10 @@ def to_csv(frame):
     return stream.getvalue().strip()
 
 
-def sample_users(user_time, percent, random_seed=None):
+def sample_users(user_time, percent, random_state=None):
     uniques = user_time['uid'].unique()
-    if random_seed is not None:
-        seed(random_seed)
+    if random_state is not None:
+        seed(random_state)
     shuffle(uniques)
     fraction = percent / 100.0
     user_count = int(round(len(uniques) * fraction))
@@ -38,7 +39,7 @@ def sample_users(user_time, percent, random_seed=None):
 
 
 def filter_user_bracket_file(csv_path, day_brackets=day_brackets,
-        output_path=None, sample_percent=-1, random_seed=None):
+        output_path=None, sample_percent=-1, random_state=None):
     day = day_brackets[-1] + 1
     time = day * time_per_day
     user_time = read_csv(csv_path)
@@ -52,7 +53,7 @@ def filter_user_bracket_file(csv_path, day_brackets=day_brackets,
     output_paths = [output_path]
     results = []
     if 0 <= sample_percent:
-        samples = sample_users(user_time, sample_percent, random_seed)
+        samples = sample_users(user_time, sample_percent, random_state)
         output_paths.append(output_path + '.test.csv')
     for sample, output_path in zip(samples, output_paths):
         if output_path:
@@ -135,8 +136,11 @@ def format_names(day_brackets):
 def fit_score(classifier, features, classes, random_state=None):
     X_train, X_test, y_train, y_test = train_test_split(
         features, classes, test_size=0.4, random_state=random_state)
-    classifier = classifier.fit(X_train, y_train)
-    score = classifier.score(X_test, y_test)
+    scaler = StandardScaler().fit(X_train.astype(float))
+    X_train_transformed = scaler.transform(X_train.astype(float))
+    X_test_transformed = scaler.transform(X_test.astype(float))
+    classifier = classifier.fit(X_train_transformed, y_train)
+    score = classifier.score(X_test_transformed, y_test)
     return classifier, score
 
 
@@ -170,20 +174,22 @@ def retention_csv(args):
     parser.add_argument('--filter_path', help='Just filter CSV to this file.')
     parser.add_argument('--aggregate_path', help='Aggregate users CSV to this file.  Filter users who have a full bracket to potentially be retained.')
     parser.add_argument('--sample_percent', default=-1, type=int, help='During filter, randomly sample up to this percent of users.  Example 80 represents 80%.  The other 20% are placed in a ".test.csv"')
-    parser.add_argument('--random_seed', default=None, help='Consistently reproduce the same random sample with this seed string.')
+    parser.add_argument('--random_state', default=None, help='Consistently reproduce the same random sample with this seed string.')
     parser.add_argument('--test', action='store_true', help='Check examples in README.md.')
     parsed = parser.parse_args(args)
+    result = None
     if parsed.csv_path:
         if parsed.aggregate_path:
-            return aggregate_file(parsed.csv_path, parsed.aggregate_path)
+            result = aggregate_file(parsed.csv_path, parsed.aggregate_path)
         elif parsed.filter_path:
-            return filter_user_bracket_file(parsed.csv_path, output_path=parsed.filter_path,
-                sample_percent=parsed.sample_percent, random_seed=parsed.random_seed)
+            result = filter_user_bracket_file(parsed.csv_path, output_path=parsed.filter_path,
+                sample_percent=parsed.sample_percent, random_state=parsed.random_state)
         else:
-            return decision_tree_retain_1_file(parsed.csv_path)
+            result = decision_tree_retain_1_file(parsed.csv_path)
     if parsed.test:
         from doctest import testfile
         testfile('README.md')
+    return result
 
 
 def retention_csv_string(args_text):
@@ -193,4 +199,6 @@ def retention_csv_string(args_text):
 
 if '__main__' == __name__:
     from sys import argv
-    print(retention_csv(argv[1:]))
+    result = retention_csv(argv[1:])
+    if result:
+        print(result)
