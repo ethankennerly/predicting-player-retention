@@ -2,14 +2,15 @@
 See README.md
 """
 
-from collections import defaultdict
-from random import seed, shuffle
 from StringIO import StringIO
+from collections import defaultdict
+from numpy import append, array, copy, delete
 from pandas import DataFrame, read_csv
+from pydotplus import graph_from_dot_data
+from random import seed, shuffle
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
 from sklearn.preprocessing import StandardScaler
-from pydotplus import graph_from_dot_data
 
 
 day_brackets = [7, 13]
@@ -144,12 +145,18 @@ def fit_score(classifier, features, classes, random_state=None):
     return classifier, score
 
 
-def decision_tree(aggregated, day_brackets=day_brackets):
-    classifier = DecisionTreeClassifier()
+def features_classes(aggregated, day_brackets=day_brackets):
     names = format_names(day_brackets)
     features = aggregated[names[0]].values.reshape((-1, 1))
     ## print 'features:\n%r' % features
     classes = aggregated[names[1]].values
+    return features, classes
+
+
+def decision_tree(aggregated, day_brackets=day_brackets):
+    names = format_names(day_brackets)
+    features, classes = features_classes(aggregated, day_brackets)
+    classifier = DecisionTreeClassifier()
     return fit_score(classifier, features, classes)
 
 
@@ -167,12 +174,38 @@ def decision_tree_retain_1_file(csv_path):
     return 'Decision tree score: %0.2f' % score
 
 
+def set_dimension(table, row_length):
+    is_array = hasattr(table, 'tolist')
+    if is_array:
+        shaped = table.tolist()
+    else:
+        shaped = table[:]
+    for row in shaped:
+        while len(row) < row_length:
+            row.append(0)
+        while row_length < len(row):
+            del row[-1]
+    if is_array:
+        shaped = array(shaped)
+    return shaped
+
+
+def plot(csv_path):
+    from plot_classifier_comparison import plot_comparison
+    retained = read_csv(csv_path)
+    features, classes = features_classes(retained)
+    features2d = set_dimension(features, 2)
+    datasets = [(features2d, classes)]
+    plot_comparison(datasets)
+
+
 def retention_csv(args):
     from argparse import ArgumentParser
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('csv_path', nargs='?', help='Where to read CSV.')
     parser.add_argument('--filter_path', help='Just filter CSV to this file.')
     parser.add_argument('--aggregate_path', help='Aggregate users CSV to this file.  Filter users who have a full bracket to potentially be retained.')
+    parser.add_argument('--plot', action='store_true', help='Plot various classifiers.')
     parser.add_argument('--sample_percent', default=-1, type=int, help='During filter, randomly sample up to this percent of users.  Example 80 represents 80%.  The other 20% are placed in a ".test.csv"')
     parser.add_argument('--random_state', default=None, help='Consistently reproduce the same random sample with this seed string.')
     parser.add_argument('--test', action='store_true', help='Check examples in README.md.')
@@ -186,6 +219,8 @@ def retention_csv(args):
                 sample_percent=parsed.sample_percent, random_state=parsed.random_state)
         else:
             result = decision_tree_retain_1_file(parsed.csv_path)
+        if parsed.plot:
+            plot(parsed.csv_path)
     if parsed.test:
         from doctest import testfile
         testfile('README.md')

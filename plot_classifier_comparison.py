@@ -25,7 +25,7 @@ set.
 # Code source: Gaël Varoquaux
 #              Andreas Müller
 # Modified for documentation by Jaques Grobler
-# Reformatted to reuse with a novel dataset by Ethan Kennerly
+# Extracted plot function to reuse with a novel dataset by Ethan Kennerly
 # License: BSD 3 clause
 
 import numpy as np

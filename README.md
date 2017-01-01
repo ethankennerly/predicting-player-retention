@@ -449,4 +449,43 @@ Download and run the comparison:
 
     python plot_classifier_comparison.py
 
+These can be compared with the test dataset.
 
+    bash retention_example.sh
+
+Which calls:
+
+    python retention.py --plot test/part-00000.small.csv.test.user.csv
+
+    >>> print(retention_csv_string('--plot test/part-00000.small.csv.test.user.csv'))
+
+
+### Reshape 2D
+
+The plot expects 2D.  As a cursory investigation, I only had one dimension:  number of days in first week.
+
+I reshaped the features.
+
+    >>> features1d = array([[20], [21], [22]])
+    >>> features2d = set_dimension(features1d, 2)
+    >>> features2d
+    array([[20,  0],
+           [21,  0],
+           [22,  0]])
+    >>> features2d = set_dimension(features2d, 2)
+    >>> features2d
+    array([[20,  0],
+           [21,  0],
+           [22,  0]])
+
+Three dimensional or higher features are truncated:
+
+    >>> features3d = [[20, 30, 40], [21, 31, 41]]
+    >>> features2d = set_dimension(features3d, 2)
+    >>> features2d
+    [[20, 30], [21, 31]]
+
+    >>> features0d = [[], []]
+    >>> features2d = set_dimension(features0d, 2)
+    >>> features2d
+    [[0, 0], [0, 0]]
