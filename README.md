@@ -98,6 +98,8 @@ Reuse SciKit to split data.
 
 TODO:
 
+Plot example of various models.
+
 For a baseline of noise, predict and compare random data.
 
 <http://scikit-learn.org/stable/modules/model_evaluation.html>
@@ -335,6 +337,12 @@ Test GraphViz installation with:
     >>> write_pdf(classifier, 'test/retained.pdf')
     Decision tree graphed in file 'test/retained.pdf'
 
+Because I standardized the features, the features listed are in terms of deviations from the mean.
+
+The 'gini' refers to Gini-impurity, or the probability of misclassifying.
+<https://en.wikipedia.org/wiki/Decision_tree_learning#Gini_impurity>
+<http://scikit-learn.org/stable/modules/tree.html#classification-criteria>
+
 ### Filter users to retention bracket
 
 Suppose the bracket of retention is 7 to 13 days.
@@ -427,3 +435,18 @@ Pandas extracted unique users.
 <http://chrisalbon.com/python/pandas_list_unique_values_in_column.html>
 And filtered rows by that sample of users.
 <http://stackoverflow.com/questions/12096252/use-a-list-of-values-to-select-rows-from-a-pandas-dataframe>
+
+
+### Compare various models
+
+If you don't have MatPlot, install:
+
+    pip install matplotlib
+
+Download and run the comparison:
+
+<http://scikit-learn.org/stable/auto_examples/classification/plot_classifier_comparison.html>
+
+    python plot_classifier_comparison.py
+
+
