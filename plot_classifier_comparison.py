@@ -100,7 +100,7 @@ def all_classifiers():
     return names, classifiers
 
 
-def plot_comparison(datasets, names = None, classifiers = None, is_verbose=False):
+def plot_comparison(datasets, names = None, classifiers = None, is_verbose=False, output_path=None):
     if not names and not classifiers:
         names, classifiers = all_classifiers()
     h = .02  # step size in the mesh
@@ -173,10 +173,14 @@ def plot_comparison(datasets, names = None, classifiers = None, is_verbose=False
                     size=15, horizontalalignment='right')
             i += 1
     plt.tight_layout()
-    plt.show()
+    if output_path:
+        print('plot_comparison: Saved figure to: %r' % output_path)
+        figure.savefig(output_path)
+    else:
+        plt.show()
 
 
 if '__main__' == __name__:
     print(__doc__)
     datasets = moon_circle_line_datasets()
-    plot_comparison(datasets, is_verbose = False)
+    plot_comparison(datasets)

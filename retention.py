@@ -4,6 +4,7 @@ See README.md
 
 from StringIO import StringIO
 from collections import defaultdict
+from math import isnan
 from numpy import append, array, copy, delete
 from pandas import DataFrame, read_csv
 from pydotplus import graph_from_dot_data
@@ -16,6 +17,10 @@ from sklearn.preprocessing import StandardScaler
 day_brackets = [7, 13]
 template = 'day_%s_%s'
 time_per_day = 1000 * 60 * 60 * 24
+time_names = [
+    'absence_time',
+    'no_progress_times',
+]
 
 
 def to_csv(frame):
@@ -99,18 +104,28 @@ def aggregate(frame, day_brackets=day_brackets):
     for uid in properties['uid']:
         for name in names:
             properties[name].append(0)
+        for time in time_names:
+            properties[time].append(0)
     names_length = len(names)
     for uid, bracket in uid_bracket.groups:
         uid_index = properties['uid'].index(uid)
         if bracket < names_length:
             try:
                 name = names[bracket]
-                days = frame[(frame['uid'] == uid) & (frame['bracket'] == bracket)]['day']
+                in_bracket = frame[(frame['uid'] == uid) & (frame['bracket'] == bracket)]
+                days = in_bracket['day']
                 properties[name][uid_index] = days.nunique()
             except:
                 print('aggregate: bracket %r not in names %r' % (bracket, names))
+            if 0 == bracket:
+                for time in time_names:
+                    value = in_bracket[time].mean()
+                    if isnan(value):
+                        value = -1
+                    properties[time][uid_index] = value
     columns = ['uid']
     columns.extend(names)
+    columns.extend(time_names)
     aggregated = DataFrame(properties, columns=columns)
     return aggregated
 
@@ -146,10 +161,12 @@ def fit_score(classifier, features, classes, random_state=None):
 
 
 def features_classes(aggregated, day_brackets=day_brackets, is_binary=True):
-    names = format_names(day_brackets)
-    features = aggregated[names[0]].values.reshape((-1, 1))
+    feature_name, class_name = format_names(day_brackets)
+    feature_names = [feature_name] + time_names
+    features = aggregated[feature_names].values
+    ## features = features.reshape((-1, 1))
     ## print 'features:\n%r' % features
-    classes = aggregated[names[1]].values
+    classes = aggregated[class_name].values
     if is_binary:
         def binary(x):
             if 1 <= x:
@@ -189,7 +206,11 @@ def set_dimension(table, row_length):
         shaped = table[:]
     for row in shaped:
         while len(row) < row_length:
-            row.append(row[-1])
+            if len(row) == 0:
+                value = 0
+            else:
+                value = row[-1]
+            row.append(value)
         while row_length < len(row):
             del row[-1]
     if is_array:
@@ -204,7 +225,7 @@ def plot(csv_path):
     features2d = set_dimension(features, 2)
     datasets = [(features2d, classes)]
     names, classifiers = sample_classifiers()
-    plot_comparison(datasets, names, classifiers, is_verbose=True)
+    plot_comparison(datasets, names, classifiers, is_verbose=True, output_path=csv_path + '.png')
 
 
 def retention_csv(args):

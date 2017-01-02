@@ -102,7 +102,11 @@ Plot example with only two classes:  retained in second week or not.
 
 TODO:
 
-Explore if another feature besides days in first week increases the prediction of retaining the second week.
+Explore if number of events, absence time, or no progress time increases the prediction of retaining the second week.
+
+Show which features predict best.
+
+<http://scikit-learn.org/stable/modules/feature_selection.html>
 
 For a baseline of noise, predict and compare random data.
 
@@ -293,7 +297,7 @@ Example:
     4,400,progress,0,,0,0,0
     <BLANKLINE>
     >>> print(open('test/user_retention.csv').read())
-    uid,day_0_6,day_7_13
+    uid,absence_time_mean,no_progress_time_mean,event_count,day_0_6,day_7_13
     2,2,1
     3,1,0
     4,1,0
@@ -306,9 +310,6 @@ Example:
 
 To avoid deprecation warning, I reshaped the single feature of days during first bracket.
 And I reshaped the sample that is being predicted to be a nested array.
-
-    >>> classifier.predict_proba([[0]])
-    array([[ 1.]])
 
     C:\Python27\lib\site-packages\sklearn\utils\validation.py:395: DeprecationWarning: Passing 1d arrays as data is deprecated in 0.17 and will raise ValueError in 0.19. Reshape your data either using X.reshape(-1, 1) if your data has a single feature or X.reshape(1, -1) if it contains a single sample.
       DeprecationWarning)
@@ -461,7 +462,11 @@ Which calls:
 
     python retention.py --plot test/part-00000.small.csv.test.user.csv
 
-    >>> print(retention_csv_string('--plot test/part-00000.small.csv.test.user.csv'))
+    >>> print(retention_csv_string('--plot test/part-00000.small.csv.test.user.csv')) # doctest: +ELLIPSIS
+    Decision tree graphed in file 'test/part-00000.small.csv.test.user.csv.pdf'
+    ...
+    plot_comparison: Saved figure to: 'test/part-00000.small.csv.test.user.csv.png'
+    ...
 
 Four of the classifiers accepted this data.  The others did not.
 In these charts, the classifiers don't appear to have enough meaningful information to predict the number of days a player will replay in the second week from the number of days they played in the first week.
@@ -481,14 +486,14 @@ I reshaped the features.
     >>> features1d = array([[20], [21], [22]])
     >>> features2d = set_dimension(features1d, 2)
     >>> features2d
-    array([[20,  0],
-           [21,  0],
-           [22,  0]])
+    array([[20, 20],
+           [21, 21],
+           [22, 22]])
     >>> features2d = set_dimension(features2d, 2)
     >>> features2d
-    array([[20,  0],
-           [21,  0],
-           [22,  0]])
+    array([[20, 20],
+           [21, 21],
+           [22, 22]])
 
 Three dimensional or higher features are truncated:
 

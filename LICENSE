@@ -1,3 +1,15 @@
+plot_classifier_comparison.py:
+
+Code source: Gaël Varoquaux
+             Andreas Müller
+Modified for documentation by Jaques Grobler
+Extracted plot function to reuse with a novel dataset by Ethan Kennerly
+License: BSD 3 clause
+
+Mediatonic player data is owned and distributed by Mediatonic.
+
+My analysis is under the following license:
+
 MIT License
 
 Copyright (c) 2016 Ethan Kennerly
