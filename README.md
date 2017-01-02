@@ -98,9 +98,11 @@ Reuse SciKit to split data.
 
 Plot example of various models.
 
+Plot example with only two classes:  retained in second week or not.
+
 TODO:
 
-Plot example with only two classes.
+Explore if another feature besides days in first week increases the prediction of retaining the second week.
 
 For a baseline of noise, predict and compare random data.
 
@@ -466,6 +468,9 @@ In these charts, the classifiers don't appear to have enough meaningful informat
 
 ![Sample classifiers](test/part-00000.small.csv.test.user.png)
 
+This becomes simpler when only predicting if the player would replay in the second week.  The function `feature_classes` argument `is_binary` converts the days in the second week to just a binary of no days or any days in the second week.
+
+![Sample classifiers](test/part-00000.small.csv.test.user.binary.png)
 
 ### Reshape 2D
 

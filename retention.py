@@ -145,11 +145,18 @@ def fit_score(classifier, features, classes, random_state=None):
     return classifier, score
 
 
-def features_classes(aggregated, day_brackets=day_brackets):
+def features_classes(aggregated, day_brackets=day_brackets, is_binary=True):
     names = format_names(day_brackets)
     features = aggregated[names[0]].values.reshape((-1, 1))
     ## print 'features:\n%r' % features
     classes = aggregated[names[1]].values
+    if is_binary:
+        def binary(x):
+            if 1 <= x:
+                return 1
+            else:
+                return 0
+        classes = array([binary(cls) for cls in classes])
     return features, classes
 
 

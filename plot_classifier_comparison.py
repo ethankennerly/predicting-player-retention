@@ -62,13 +62,11 @@ def sample_classifiers():
     names = [
         "Decision Tree",
         "Nearest Neighbors",
-        "Gaussian Process",
         "Random Forest",
     ]
     classifiers = [
         DecisionTreeClassifier(max_depth=5),
         KNeighborsClassifier(3),
-        GaussianProcessClassifier(1.0 * RBF(1.0), warm_start=True),
         RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
     ]
     return names, classifiers
