@@ -12,6 +12,7 @@ from random import seed, shuffle
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
 from sklearn.preprocessing import StandardScaler
+from sklearn.feature_selection import SelectKBest, f_classif
 
 
 day_brackets = [7, 13]
@@ -188,7 +189,12 @@ def features_classes(aggregated, day_brackets=day_brackets, is_binary=True):
             else:
                 return 0
         classes = array([binary(cls) for cls in classes])
-    return features, classes
+    features = set_dimension(features, 2)
+    best = SelectKBest(f_classif, k=2)
+    best_features = best.fit_transform(features, classes)
+    print('features_classes: features: %r\n    scores %r\n    p-values %r\n    support %r' % (
+        feature_names, best.scores_, best.pvalues_, best.get_support()))
+    return best_features, classes
 
 
 def decision_tree(aggregated, day_brackets=day_brackets):
@@ -212,21 +218,22 @@ def decision_tree_retain_1_file(csv_path):
     return 'Decision tree score: %0.2f' % score
 
 
-def set_dimension(table, row_length):
+def set_dimension(table, min_row_length, max_row_length = None):
     is_array = hasattr(table, 'tolist')
     if is_array:
         shaped = table.tolist()
     else:
         shaped = table[:]
     for row in shaped:
-        while len(row) < row_length:
+        while len(row) < min_row_length:
             if len(row) == 0:
                 value = 0
             else:
                 value = row[-1]
             row.append(value)
-        while row_length < len(row):
-            del row[-1]
+        if max_row_length:
+            while max_row_length < len(row):
+                del row[-1]
     if is_array:
         shaped = array(shaped)
     return shaped
@@ -236,8 +243,7 @@ def plot(csv_path):
     from plot_classifier_comparison import plot_comparison, sample_classifiers
     retained = read_csv(csv_path)
     features, classes = features_classes(retained)
-    features2d = set_dimension(features, 2)
-    datasets = [(features2d, classes)]
+    datasets = [(features, classes)]
     names, classifiers = sample_classifiers()
     plot_comparison(datasets, names, classifiers, is_verbose=True, output_path=csv_path + '.png')
 

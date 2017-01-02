@@ -100,11 +100,11 @@ Plot example of various models.
 
 Plot example with only two classes:  retained in second week or not.
 
+Select 2 best from absence time, no progress time to predict retaining the plaer in their second week.
+
 TODO:
 
-Explore if number of events, absence time, or no progress time increases the prediction of retaining the second week.
-
-Show which features predict best.
+Plot 1D and 2D predictions.
 
 <http://scikit-learn.org/stable/modules/feature_selection.html>
 
@@ -312,6 +312,10 @@ Example:
 ### Decision tree classifies retained
 
     >>> classifier, score = decision_tree(retained)
+    features_classes: features: ['day_0_6', 'absence_time', 'absence_time_current', 'no_progress_times', 'no_progress_times_current']
+        scores array([ nan,  nan,  nan,  nan,  nan])
+        p-values array([ nan,  nan,  nan,  nan,  nan])
+        support array([False, False, False,  True,  True], dtype=bool)
 
 To avoid deprecation warning, I reshaped the single feature of days during first bracket.
 And I reshaped the sample that is being predicted to be a nested array.
@@ -467,9 +471,17 @@ Which calls:
 
     python retention.py --plot test/part-00000.small.csv.test.user.csv
 
+I saved the figure to file by appending file extension '.png'.
+<http://stackoverflow.com/questions/9622163/save-plot-to-image-file-instead-of-displaying-it-using-matplotlib-so-it-can-be>
+Example:
+
     >>> print(retention_csv_string('--aggregate_path test/part-00000.small.csv.test.user.csv test/part-00000.small.csv.test.csv'))
     test/part-00000.small.csv.test.user.csv
-    >>> print(retention_csv_string('--plot test/part-00000.small.csv.test.user.csv')) # doctest: +ELLIPSIS
+    >>> print(retention_csv_string('--plot test/part-00000.small.csv.test.user.csv')) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    features_classes: features: ['day_0_6', 'absence_time', 'absence_time_current', 'no_progress_times', 'no_progress_times_current']
+        scores array([ 107..., 6..., 45..., 0..., 0...])
+        p-values array([  ..., ..., ..., ..., ...])
+        support array([ True, False,  True, False, False], dtype=bool)
     Decision tree graphed in file 'test/part-00000.small.csv.test.user.csv.pdf'
     ...
     plot_comparison: Saved figure to: 'test/part-00000.small.csv.test.user.csv.png'
@@ -505,7 +517,10 @@ I reshaped the features.
 Three dimensional or higher features are truncated:
 
     >>> features3d = [[20, 30, 40], [21, 31, 41]]
-    >>> features2d = set_dimension(features3d, 2)
+    >>> features3d = set_dimension(features3d, 2)
+    >>> features3d
+    [[20, 30, 40], [21, 31, 41]]
+    >>> features2d = set_dimension(features3d, 2, 2)
     >>> features2d
     [[20, 30], [21, 31]]
 

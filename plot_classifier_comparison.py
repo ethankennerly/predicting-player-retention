@@ -176,6 +176,7 @@ def plot_comparison(datasets, names = None, classifiers = None, is_verbose=False
     if output_path:
         print('plot_comparison: Saved figure to: %r' % output_path)
         figure.savefig(output_path)
+        plt.close(figure)
     else:
         plt.show()
 
