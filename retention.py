@@ -172,15 +172,13 @@ def fit_score(classifier, features, classes, random_state=None):
     return classifier, score
 
 
-def features_classes(aggregated, day_brackets=day_brackets, is_binary=True):
+def features_classes(aggregated, day_brackets=day_brackets, feature_count=2, is_binary=True, is_verbose=False):
     feature_name, class_name = format_names(day_brackets)
     feature_names = [feature_name]
     for time in time_names:
         feature_names.append(time)
         feature_names.append(time + '_current')
     features = aggregated[feature_names].values
-    ## features = features.reshape((-1, 1))
-    ## print 'features:\n%r' % features
     classes = aggregated[class_name].values
     if is_binary:
         def binary(x):
@@ -190,10 +188,12 @@ def features_classes(aggregated, day_brackets=day_brackets, is_binary=True):
                 return 0
         classes = array([binary(cls) for cls in classes])
     features = set_dimension(features, 2)
-    best = SelectKBest(f_classif, k=2)
+    best = SelectKBest(f_classif, k=feature_count)
     best_features = best.fit_transform(features, classes)
-    print('features_classes: features: %r\n    scores %r\n    p-values %r\n    support %r' % (
-        feature_names, best.scores_, best.pvalues_, best.get_support()))
+    best_features = set_dimension(best_features, 2)
+    if is_verbose:
+        print('features_classes: features: %r\n    scores %r\n    p-values %r\n    support %r' % (
+            feature_names, best.scores_, best.pvalues_, best.get_support()))
     return best_features, classes
 
 
@@ -239,13 +239,16 @@ def set_dimension(table, min_row_length, max_row_length = None):
     return shaped
 
 
-def plot(csv_path):
+def plot(csv_path, is_verbose=True):
     from plot_classifier_comparison import plot_comparison, sample_classifiers
     retained = read_csv(csv_path)
-    features, classes = features_classes(retained)
-    datasets = [(features, classes)]
+    feature_counts = [1, 2]
+    datasets = []
+    for feature_count in feature_counts:
+        features, classes = features_classes(retained, feature_count=feature_count, is_verbose=is_verbose)
+        datasets.append((features, classes))
     names, classifiers = sample_classifiers()
-    plot_comparison(datasets, names, classifiers, is_verbose=True, output_path=csv_path + '.png')
+    plot_comparison(datasets, names, classifiers, is_verbose=is_verbose, output_path=csv_path + '.png')
 
 
 def retention_csv(args):

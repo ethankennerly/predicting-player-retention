@@ -102,11 +102,11 @@ Plot example with only two classes:  retained in second week or not.
 
 Select 2 best from absence time, no progress time to predict retaining the plaer in their second week.
 
-TODO:
-
-Plot 1D and 2D predictions.
+Plot 1-feature and 2-feature predictions.
 
 <http://scikit-learn.org/stable/modules/feature_selection.html>
+
+TODO:
 
 For a baseline of noise, predict and compare random data.
 
