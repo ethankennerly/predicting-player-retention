@@ -96,9 +96,11 @@ Standardize scale.
 
 Reuse SciKit to split data.
 
+Plot example of various models.
+
 TODO:
 
-Plot example of various models.
+Plot example with only two classes.
 
 For a baseline of noise, predict and compare random data.
 
@@ -458,6 +460,11 @@ Which calls:
     python retention.py --plot test/part-00000.small.csv.test.user.csv
 
     >>> print(retention_csv_string('--plot test/part-00000.small.csv.test.user.csv'))
+
+Four of the classifiers accepted this data.  The others did not.
+In these charts, the classifiers don't appear to have enough meaningful information to predict the number of days a player will replay in the second week from the number of days they played in the first week.
+
+![Sample classifiers](test/part-00000.small.csv.test.user.png)
 
 
 ### Reshape 2D

@@ -58,25 +58,54 @@ def moon_circle_line_datasets():
     return datasets
 
 
-def plot_comparison(datasets):
-    h = .02  # step size in the mesh
-
-    names = ["Nearest Neighbors", "Linear SVM", "RBF SVM", "Gaussian Process",
-             "Decision Tree", "Random Forest", "Neural Net", "AdaBoost",
-             "Naive Bayes", "QDA"]
-
+def sample_classifiers():
+    names = [
+        "Decision Tree",
+        "Nearest Neighbors",
+        "Gaussian Process",
+        "Random Forest",
+    ]
     classifiers = [
-        KNeighborsClassifier(3),
-        SVC(kernel="linear", C=0.025),
-        SVC(gamma=2, C=1),
-        GaussianProcessClassifier(1.0 * RBF(1.0), warm_start=True),
         DecisionTreeClassifier(max_depth=5),
+        KNeighborsClassifier(3),
+        GaussianProcessClassifier(1.0 * RBF(1.0), warm_start=True),
         RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
-        MLPClassifier(alpha=1),
-        AdaBoostClassifier(),
-        GaussianNB(),
-        QuadraticDiscriminantAnalysis()]
+    ]
+    return names, classifiers
 
+
+def all_classifiers():
+    names = [
+        "Decision Tree",
+        "Nearest Neighbors",
+        "Gaussian Process",
+        "Random Forest",
+        "QDA",
+        "Neural Net",
+        "RBF SVM",
+        "Naive Bayes",
+        "Linear SVM",
+        "AdaBoost",
+    ]
+    classifiers = [
+        DecisionTreeClassifier(max_depth=5),
+        KNeighborsClassifier(3),
+        GaussianProcessClassifier(1.0 * RBF(1.0), warm_start=True),
+        RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
+        QuadraticDiscriminantAnalysis(),
+        MLPClassifier(alpha=1),
+        SVC(kernel="linear", C=0.025, decision_function_shape='ovr'),
+        GaussianNB(),
+        SVC(gamma=2, C=1, decision_function_shape='ovr'),
+        AdaBoostClassifier(),
+    ]
+    return names, classifiers
+
+
+def plot_comparison(datasets, names = None, classifiers = None, is_verbose=False):
+    if not names and not classifiers:
+        names, classifiers = all_classifiers()
+    h = .02  # step size in the mesh
     figure = plt.figure(figsize=(27, 9))
     i = 1
     # iterate over datasets
@@ -86,7 +115,9 @@ def plot_comparison(datasets):
         X = StandardScaler().fit_transform(X)
         X_train, X_test, y_train, y_test = \
             train_test_split(X, y, test_size=.4, random_state=42)
-
+        if is_verbose:
+            print('plot_classifier_comparison: index %r size %r head %r' % (
+                ds_cnt, X_train.size, X_train[:2]))
         x_min, x_max = X[:, 0].min() - .5, X[:, 0].max() + .5
         y_min, y_max = X[:, 1].min() - .5, X[:, 1].max() + .5
         xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
@@ -122,6 +153,9 @@ def plot_comparison(datasets):
                 Z = clf.predict_proba(np.c_[xx.ravel(), yy.ravel()])[:, 1]
 
             # Put the result into a color plot
+            if is_verbose:
+                print('name %r Z.shape %r xx.shape %r size ratio %r Z head %r' % (
+                    name, Z.shape, xx.shape, float(Z.size) / xx.size, Z[:2]))
             Z = Z.reshape(xx.shape)
             ax.contourf(xx, yy, Z, cmap=cm, alpha=.8)
 
@@ -147,4 +181,4 @@ def plot_comparison(datasets):
 if '__main__' == __name__:
     print(__doc__)
     datasets = moon_circle_line_datasets()
-    plot_comparison(datasets)
+    plot_comparison(datasets, is_verbose = False)

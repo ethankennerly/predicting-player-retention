@@ -182,7 +182,7 @@ def set_dimension(table, row_length):
         shaped = table[:]
     for row in shaped:
         while len(row) < row_length:
-            row.append(0)
+            row.append(row[-1])
         while row_length < len(row):
             del row[-1]
     if is_array:
@@ -191,12 +191,13 @@ def set_dimension(table, row_length):
 
 
 def plot(csv_path):
-    from plot_classifier_comparison import plot_comparison
+    from plot_classifier_comparison import plot_comparison, sample_classifiers
     retained = read_csv(csv_path)
     features, classes = features_classes(retained)
     features2d = set_dimension(features, 2)
     datasets = [(features2d, classes)]
-    plot_comparison(datasets)
+    names, classifiers = sample_classifiers()
+    plot_comparison(datasets, names, classifiers, is_verbose=True)
 
 
 def retention_csv(args):
