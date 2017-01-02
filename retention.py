@@ -101,11 +101,13 @@ def aggregate(frame, day_brackets=day_brackets):
     properties = defaultdict(list)
     properties['uid'] = uid.groups.keys()
     bracket_max = frame['bracket'].max()
+    time_bracket = day_brackets[0] * time_per_day
     for uid in properties['uid']:
         for name in names:
             properties[name].append(0)
         for time in time_names:
             properties[time].append(0)
+            properties[time + '_current'].append(0)
     names_length = len(names)
     for uid, bracket in uid_bracket.groups:
         uid_index = properties['uid'].index(uid)
@@ -123,9 +125,18 @@ def aggregate(frame, day_brackets=day_brackets):
                     if isnan(value):
                         value = -1
                     properties[time][uid_index] = value
+                    time_min = in_bracket[time].min()
+                    time_max = in_bracket[time].max()
+                    if isnan(time_min):
+                        time_min = -1
+                    if isnan(time_max):
+                        time_max = -1
+                    properties[time + '_current'][uid_index] = time_bracket - (time_max - time_min)
     columns = ['uid']
     columns.extend(names)
-    columns.extend(time_names)
+    for time in time_names:
+        columns.append(time)
+        columns.append(time + '_current')
     aggregated = DataFrame(properties, columns=columns)
     return aggregated
 

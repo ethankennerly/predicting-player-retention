@@ -272,10 +272,14 @@ I subtracted time since last progress for events that were not progress.  Exampl
 Number of days played in range.  Example:
 
     >>> retained = aggregate(frame)
-    >>> retained
-                                            uid  day_0_6  day_7_13
-    0                                         2        1         1
-    1  0001E7ED9ECB34E9A1D31DE15B334E32001B32BD        2         0
+    >>> retained #doctest: +NORMALIZE_WHITESPACE
+                                            uid  day_0_6  day_7_13  absence_time  \
+    0                                         2        1         1          -1.0
+    1  0001E7ED9ECB34E9A1D31DE15B334E32001B32BD        2         0    50070253.0
+    <BLANKLINE>
+       absence_time_current  no_progress_times  no_progress_times_current
+    0           604800000.0           0.000000                  604800000
+    1           504940506.0       46835.333333                  604659494
 
 
 ### Aggregate user retention CSV
@@ -297,11 +301,12 @@ Example:
     4,400,progress,0,,0,0,0
     <BLANKLINE>
     >>> print(open('test/user_retention.csv').read())
-    uid,absence_time_mean,no_progress_time_mean,event_count,day_0_6,day_7_13
-    2,2,1
-    3,1,0
-    4,1,0
+    uid,day_0_6,day_7_13,absence_time,absence_time_current,no_progress_times,no_progress_times_current
+    2,2,1,604799800.0,604800000.0,0.0,604800000
+    3,1,0,-1.0,604800000.0,0.0,604800000
+    4,1,0,-1.0,604800000.0,0.0,604800000
     <BLANKLINE>
+
 
 
 ### Decision tree classifies retained
