@@ -173,7 +173,10 @@ def fit_score(classifier, features, classes, random_state=None):
 
 def features_classes(aggregated, day_brackets=day_brackets, is_binary=True):
     feature_name, class_name = format_names(day_brackets)
-    feature_names = [feature_name] + time_names
+    feature_names = [feature_name]
+    for time in time_names:
+        feature_names.append(time)
+        feature_names.append(time + '_current')
     features = aggregated[feature_names].values
     ## features = features.reshape((-1, 1))
     ## print 'features:\n%r' % features

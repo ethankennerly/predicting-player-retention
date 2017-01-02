@@ -227,9 +227,9 @@ Convert to CSV.
 Simulated command line arguments:
 
     >>> from retention import *
-    >>> print(retention_csv_string('--random_state 0 test/user_retention.csv'))
+    >>> print(retention_csv_string('--random_state 0 test/user_retention.csv')) #doctest: +ELLIPSIS
     Decision tree graphed in file 'test/user_retention.csv.pdf'
-    Decision tree score: 0.50
+    Decision tree score: 0...
 
 ### Derive times
 
@@ -467,6 +467,8 @@ Which calls:
 
     python retention.py --plot test/part-00000.small.csv.test.user.csv
 
+    >>> print(retention_csv_string('--aggregate_path test/part-00000.small.csv.test.user.csv test/part-00000.small.csv.test.csv'))
+    test/part-00000.small.csv.test.user.csv
     >>> print(retention_csv_string('--plot test/part-00000.small.csv.test.user.csv')) # doctest: +ELLIPSIS
     Decision tree graphed in file 'test/part-00000.small.csv.test.user.csv.pdf'
     ...
