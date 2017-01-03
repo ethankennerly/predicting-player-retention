@@ -116,8 +116,10 @@ def plot_comparison(datasets, names = None, classifiers = None, is_verbose=False
         if is_verbose:
             print('plot_classifier_comparison: index %r size %r head %r' % (
                 ds_cnt, X_train.size, X_train[:2]))
+        feature_count = X.shape[1]
+        second_index = min(2, feature_count - 1)
         x_min, x_max = X[:, 0].min() - .5, X[:, 0].max() + .5
-        y_min, y_max = X[:, 1].min() - .5, X[:, 1].max() + .5
+        y_min, y_max = X[:, second_index].min() - .5, X[:, second_index].max() + .5
         xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
                              np.arange(y_min, y_max, h))
 
@@ -128,9 +130,9 @@ def plot_comparison(datasets, names = None, classifiers = None, is_verbose=False
         if ds_cnt == 0:
             ax.set_title("Input data")
         # Plot the training points
-        ax.scatter(X_train[:, 0], X_train[:, 1], c=y_train, cmap=cm_bright)
+        ax.scatter(X_train[:, 0], X_train[:, second_index], c=y_train, cmap=cm_bright)
         # and testing points
-        ax.scatter(X_test[:, 0], X_test[:, 1], c=y_test, cmap=cm_bright, alpha=0.6)
+        ax.scatter(X_test[:, 0], X_test[:, second_index], c=y_test, cmap=cm_bright, alpha=0.6)
         ax.set_xlim(xx.min(), xx.max())
         ax.set_ylim(yy.min(), yy.max())
         ax.set_xticks(())
@@ -145,11 +147,15 @@ def plot_comparison(datasets, names = None, classifiers = None, is_verbose=False
 
             # Plot the decision boundary. For that, we will assign a color to each
             # point in the mesh [x_min, x_max]x[y_min, y_max].
-            if hasattr(clf, "decision_function"):
-                Z = clf.decision_function(np.c_[xx.ravel(), yy.ravel()])
+            if 2 <= feature_count:
+                mesh = np.c_[xx.ravel(), yy.ravel()]
             else:
-                Z = clf.predict_proba(np.c_[xx.ravel(), yy.ravel()])[:, 1]
-
+                mesh = np.c_[xx.ravel()]
+            if hasattr(clf, "decision_function"):
+                Z = clf.decision_function(mesh)
+            else:
+                Z = clf.predict_proba(mesh)
+                Z = Z[:, 1]
             # Put the result into a color plot
             if is_verbose:
                 print('name %r Z.shape %r xx.shape %r size ratio %r Z head %r' % (
@@ -158,9 +164,9 @@ def plot_comparison(datasets, names = None, classifiers = None, is_verbose=False
             ax.contourf(xx, yy, Z, cmap=cm, alpha=.8)
 
             # Plot also the training points
-            ax.scatter(X_train[:, 0], X_train[:, 1], c=y_train, cmap=cm_bright)
+            ax.scatter(X_train[:, 0], X_train[:, second_index], c=y_train, cmap=cm_bright)
             # and testing points
-            ax.scatter(X_test[:, 0], X_test[:, 1], c=y_test, cmap=cm_bright,
+            ax.scatter(X_test[:, 0], X_test[:, second_index], c=y_test, cmap=cm_bright,
                        alpha=0.6)
 
             ax.set_xlim(xx.min(), xx.max())

@@ -11,6 +11,7 @@ from pydotplus import graph_from_dot_data
 from random import seed, shuffle
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
+from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import SelectKBest, f_classif
 
@@ -187,10 +188,10 @@ def features_classes(aggregated, day_brackets=day_brackets, feature_count=2, is_
             else:
                 return 0
         classes = array([binary(cls) for cls in classes])
-    features = set_dimension(features, 2)
+    ## features = set_dimension(features, 2)
     best = SelectKBest(f_classif, k=feature_count)
     best_features = best.fit_transform(features, classes)
-    best_features = set_dimension(best_features, 2)
+    ## best_features = set_dimension(best_features, 2)
     if is_verbose:
         print('features_classes: features: %r\n    scores %r\n    p-values %r\n    support %r' % (
             feature_names, best.scores_, best.pvalues_, best.get_support()))
@@ -240,14 +241,14 @@ def set_dimension(table, min_row_length, max_row_length = None):
 
 
 def plot(csv_path, is_verbose=True):
-    from plot_classifier_comparison import plot_comparison, sample_classifiers
+    from plot_classifier_comparison import plot_comparison, all_classifiers, sample_classifiers
     retained = read_csv(csv_path)
-    feature_counts = [1, 2]
+    feature_counts = [2, 1]
     datasets = []
     for feature_count in feature_counts:
         features, classes = features_classes(retained, feature_count=feature_count, is_verbose=is_verbose)
         datasets.append((features, classes))
-    names, classifiers = sample_classifiers()
+    names, classifiers = all_classifiers()
     plot_comparison(datasets, names, classifiers, is_verbose=is_verbose, output_path=csv_path + '.png')
 
 

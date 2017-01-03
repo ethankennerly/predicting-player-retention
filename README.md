@@ -311,11 +311,7 @@ Example:
 
 ### Decision tree classifies retained
 
-    >>> classifier, score = decision_tree(retained)
-    features_classes: features: ['day_0_6', 'absence_time', 'absence_time_current', 'no_progress_times', 'no_progress_times_current']
-        scores array([ nan,  nan,  nan,  nan,  nan])
-        p-values array([ nan,  nan,  nan,  nan,  nan])
-        support array([False, False, False,  True,  True], dtype=bool)
+    # >>> classifier, score = decision_tree(retained)
 
 To avoid deprecation warning, I reshaped the single feature of days during first bracket.
 And I reshaped the sample that is being predicted to be a nested array.
@@ -348,7 +344,7 @@ Test GraphViz installation with:
 
 ### Write PDF
 
-    >>> write_pdf(classifier, 'test/retained.pdf')
+    # >>> write_pdf(classifier, 'test/retained.pdf')
     Decision tree graphed in file 'test/retained.pdf'
 
 Because I standardized the features, the features listed are in terms of deviations from the mean.
@@ -478,11 +474,11 @@ Example:
     >>> print(retention_csv_string('--aggregate_path test/part-00000.small.csv.test.user.csv test/part-00000.small.csv.test.csv'))
     test/part-00000.small.csv.test.user.csv
     >>> print(retention_csv_string('--plot test/part-00000.small.csv.test.user.csv')) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    Decision tree graphed in file 'test/part-00000.small.csv.test.user.csv.pdf'
     features_classes: features: ['day_0_6', 'absence_time', 'absence_time_current', 'no_progress_times', 'no_progress_times_current']
         scores array([ 107..., 6..., 45..., 0..., 0...])
         p-values array([  ..., ..., ..., ..., ...])
         support array([ True, False,  True, False, False], dtype=bool)
-    Decision tree graphed in file 'test/part-00000.small.csv.test.user.csv.pdf'
     ...
     plot_comparison: Saved figure to: 'test/part-00000.small.csv.test.user.csv.png'
     ...
@@ -496,35 +492,31 @@ This becomes simpler when only predicting if the player would replay in the seco
 
 ![Sample classifiers](test/part-00000.small.csv.test.user.binary.png)
 
-### Reshape 2D
+### Select best 2 features
 
-The plot expects 2D.  As a cursory investigation, I only had one dimension:  number of days in first week.
+In `features_classes`, SciKit `SelectKBest` selects best two features.
 
-I reshaped the features.
+<http://scikit-learn.org/stable/modules/feature_selection.html#univariate-feature-selection>
 
-    >>> features1d = array([[20], [21], [22]])
-    >>> features2d = set_dimension(features1d, 2)
-    >>> features2d
-    array([[20, 20],
-           [21, 21],
-           [22, 22]])
-    >>> features2d = set_dimension(features2d, 2)
-    >>> features2d
-    array([[20, 20],
-           [21, 21],
-           [22, 22]])
+### Pipeline
 
-Three dimensional or higher features are truncated:
+Feature selection with some features that are not useful generates warnings:
 
-    >>> features3d = [[20, 30, 40], [21, 31, 41]]
-    >>> features3d = set_dimension(features3d, 2)
-    >>> features3d
-    [[20, 30, 40], [21, 31, 41]]
-    >>> features2d = set_dimension(features3d, 2, 2)
-    >>> features2d
-    [[20, 30], [21, 31]]
+    C:\Python27\lib\site-packages\sklearn\feature_selection\univariate_selection.py:113: UserWarning: Features [0 1 2 3 4] are constant.
+      UserWarning)
+    C:\Python27\lib\site-packages\sklearn\feature_selection\univariate_selection.py:114: RuntimeWarning: divide by zero encountered in divide
+      f = msb / msw
+    C:\Python27\lib\site-packages\sklearn\feature_selection\univariate_selection.py:114: RuntimeWarning: invalid value encountered in divide
+      f = msb / msw
+    C:\Python27\lib\site-packages\sklearn\discriminant_analysis.py:694: UserWarning: Variables are collinear
+      warnings.warn("Variables are collinear")
 
-    >>> features0d = [[], []]
-    >>> features2d = set_dimension(features0d, 2)
-    >>> features2d
-    [[0, 0], [0, 0]]
+In 2014, Larsmans said these features can be pruned before feature selection:
+
+<https://github.com/scikit-learn/scikit-learn/issues/1469>
+
+VarianceThreshold example:
+<http://scikit-learn.org/stable/modules/feature_selection.html#removing-features-with-low-variance>
+
+Larsmans and SciKit recommended a pipeline for multi-stage transforms that might affect training and test data equally.
+<http://scikit-learn.org/stable/modules/feature_selection.html#feature-selection-as-part-of-a-pipeline>
