@@ -244,18 +244,28 @@ def set_dimension(table, min_row_length, max_row_length = None):
     return shaped
 
 
-def plot(csv_path, is_verbose=True, random_state=None):
+def plot(csv_path, is_verbose=True, random_state=None, classifier_index=-1):
     from plot_classifier_comparison import plot_comparison, all_classifiers, sample_classifiers
     retained = read_csv(csv_path)
-    feature_counts = [2, 1]
+    if classifier_index <= -1:
+        feature_counts = [2, 1]
+    else:
+        feature_counts = [2]
     datasets = []
     for feature_count in feature_counts:
         features, classes = features_classes(retained, feature_count=feature_count, is_verbose=is_verbose)
         datasets.append((features, classes))
-    for feature_count in feature_counts:
-        datasets.append(random_features_classes(feature_count, random_state=random_state))
+    if classifier_index <= -1:
+        for feature_count in feature_counts:
+            datasets.append(random_features_classes(feature_count, random_state=random_state))
     names, classifiers = all_classifiers()
-    plot_comparison(datasets, names, classifiers, is_verbose=is_verbose, output_path=csv_path + '.png')
+    infix = ''
+    if 0 <= classifier_index:
+        names = [names[classifier_index]]
+        classifiers = [classifiers[classifier_index]]
+        infix = '.classifier_%s' % names[0].replace(' ', '_')
+    plot_comparison(datasets, names, classifiers, is_verbose=is_verbose,
+        output_path=csv_path + infix + '.png')
 
 
 def random_features_classes(feature_count=2, sample_count=256, class_count=2, random_state=None):
@@ -279,6 +289,7 @@ def retention_csv(args):
     parser.add_argument('--filter_path', help='Just filter CSV to this file.')
     parser.add_argument('--aggregate_path', help='Aggregate users CSV to this file.  Filter users who have a full bracket to potentially be retained.')
     parser.add_argument('--plot', action='store_true', help='Plot various classifiers.')
+    parser.add_argument('--classifier_index', default=-1, type=int, help='Index of classifier to plot, useful when data is too big to plot multiple classifiers.')
     parser.add_argument('--sample_percent', default=-1, type=int, help='During filter, randomly sample up to this percent of users.  Example 80 represents 80%.  The other 20% are placed in a ".test.csv"')
     parser.add_argument('--random_state', default=None, help='Consistently reproduce the same random sample with this seed string.')
     parser.add_argument('--test', action='store_true', help='Check examples in README.md.')
@@ -293,7 +304,7 @@ def retention_csv(args):
         else:
             result = decision_tree_retain_1_file(parsed.csv_path)
         if parsed.plot:
-            plot(parsed.csv_path, random_state=parsed.random_state)
+            plot(parsed.csv_path, random_state=parsed.random_state, classifier_index=parsed.classifier_index)
     if parsed.test:
         from doctest import testfile
         testfile('README.md')

@@ -466,7 +466,7 @@ I saved the figure to file by appending file extension '.png'.
 
     >>> print(retention_csv_string('--random_state 0 --aggregate_path test/part-00000.small.csv.test.user.csv test/part-00000.small.csv.test.csv'))
     test/part-00000.small.csv.test.user.csv
-    >>> print(retention_csv_string('--random_state 0 --plot test/part-00000.small.csv.test.user.csv')) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    >>> print(retention_csv_string('--random_state 0 --plot test/part-00000.small.csv.test.user.csv')) #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
     Decision tree graphed in file 'test/part-00000.small.csv.test.user.csv.pdf'
     features_classes: features: ['day_0_6', 'absence_time', 'absence_time_current', 'no_progress_times', 'no_progress_times_current']
         scores array([ 107..., 6..., 45..., 0..., 0...])
@@ -485,6 +485,14 @@ The chart became simpler when only predicting if the player would replay in the 
 
 For comparison, a random classification, which is expected to have about 0.5 score.
 
+Plotting a large dataset exhausted memory.  Below is plotting a single classifier.  The classifiers are listed in `plot_classifier_comparison.py`
+
+    python retention.py --random_state 0 --plot test/part-00000.small.csv.test.user.csv --classifier_index 9
+
+    >>> print(retention_csv_string('--random_state 0 --plot test/part-00000.small.csv.test.user.csv --classifier_index 9')) #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    Decision ...
+    plot_comparison: Saved figure to: 'test/part-00000.small.csv.test.user.csv.classifier_AdaBoost.png'
+    ...
 
 ### Select best 2 features
 

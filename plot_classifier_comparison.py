@@ -104,7 +104,10 @@ def plot_comparison(datasets, names = None, classifiers = None, is_verbose=False
     if not names and not classifiers:
         names, classifiers = all_classifiers()
     h = .02  # step size in the mesh
-    figure = plt.figure(figsize=(27, 9))
+    cell_size = 3
+    width = cell_size * (len(classifiers) + 1)
+    height = cell_size * len(datasets)
+    figure = plt.figure(figsize=(width, height))
     i = 1
     # iterate over datasets
     for ds_cnt, ds in enumerate(datasets):
