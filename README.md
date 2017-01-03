@@ -106,17 +106,12 @@ Plot 1-feature and 2-feature predictions.
 
 <http://scikit-learn.org/stable/modules/feature_selection.html>
 
-TODO:
+Pipeline prunes features with no variance.
 
 For a baseline of noise, predict and compare random data.
 
 <http://scikit-learn.org/stable/modules/model_evaluation.html>
 
-Cross-validate:  Predict retention in test CSV.  Compare to actual retention.
-
-<http://scikit-learn.org/stable/modules/cross_validation.html>
-
-Generalize uid,time,event column names.
 
 
 ## Details
@@ -227,8 +222,8 @@ Convert to CSV.
 Simulated command line arguments:
 
     >>> from retention import *
-    >>> print(retention_csv_string('--random_state 0 test/user_retention.csv')) #doctest: +ELLIPSIS
-    Decision tree graphed in file 'test/user_retention.csv.pdf'
+    >>> print(retention_csv_string('--random_state 0 test/part-00000.small.csv.test.user.csv')) #doctest: +ELLIPSIS
+    Decision tree graphed in file 'test/part-00000.small.csv.test.user.csv.pdf'
     Decision tree score: 0...
 
 ### Derive times
@@ -466,14 +461,12 @@ These can be compared with the test dataset.
 Which calls:
 
     python retention.py --plot test/part-00000.small.csv.test.user.csv
-
 I saved the figure to file by appending file extension '.png'.
-<http://stackoverflow.com/questions/9622163/save-plot-to-image-file-instead-of-displaying-it-using-matplotlib-so-it-can-be>
-Example:
 
-    >>> print(retention_csv_string('--aggregate_path test/part-00000.small.csv.test.user.csv test/part-00000.small.csv.test.csv'))
+
+    >>> print(retention_csv_string('--random_state 0 --aggregate_path test/part-00000.small.csv.test.user.csv test/part-00000.small.csv.test.csv'))
     test/part-00000.small.csv.test.user.csv
-    >>> print(retention_csv_string('--plot test/part-00000.small.csv.test.user.csv')) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    >>> print(retention_csv_string('--random_state 0 --plot test/part-00000.small.csv.test.user.csv')) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
     Decision tree graphed in file 'test/part-00000.small.csv.test.user.csv.pdf'
     features_classes: features: ['day_0_6', 'absence_time', 'absence_time_current', 'no_progress_times', 'no_progress_times_current']
         scores array([ 107..., 6..., 45..., 0..., 0...])
@@ -488,9 +481,10 @@ In these charts, the classifiers don't appear to have enough meaningful informat
 
 ![Sample classifiers](test/part-00000.small.csv.test.user.png)
 
-This becomes simpler when only predicting if the player would replay in the second week.  The function `feature_classes` argument `is_binary` converts the days in the second week to just a binary of no days or any days in the second week.
+The chart became simpler when only predicting if the player would replay in the second week.  The function `feature_classes` argument `is_binary` converts the days in the second week to just a binary of no days or any days in the second week.
 
-![Sample classifiers](test/part-00000.small.csv.test.user.binary.png)
+For comparison, a random classification, which is expected to have about 0.5 score.
+
 
 ### Select best 2 features
 
@@ -498,7 +492,7 @@ In `features_classes`, SciKit `SelectKBest` selects best two features.
 
 <http://scikit-learn.org/stable/modules/feature_selection.html#univariate-feature-selection>
 
-### Pipeline
+### Variance threshold
 
 Feature selection with some features that are not useful generates warnings:
 

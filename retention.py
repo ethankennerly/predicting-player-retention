@@ -8,12 +8,12 @@ from math import isnan
 from numpy import append, array, copy, delete
 from pandas import DataFrame, read_csv
 from pydotplus import graph_from_dot_data
-from random import seed, shuffle
+from random import random, randrange, seed, shuffle
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.feature_selection import SelectKBest, f_classif
+from sklearn.feature_selection import SelectKBest, VarianceThreshold, f_classif
 
 
 day_brackets = [7, 13]
@@ -23,6 +23,10 @@ time_names = [
     'absence_time',
     'no_progress_times',
 ]
+uid_column = 'uid'
+time_column = 'time'
+event_column = 'event'
+
 
 
 def to_csv(frame):
@@ -32,7 +36,7 @@ def to_csv(frame):
 
 
 def sample_users(user_time, percent, random_state=None):
-    uniques = user_time['uid'].unique()
+    uniques = user_time[uid_column].unique()
     if random_state is not None:
         seed(random_state)
     shuffle(uniques)
@@ -40,8 +44,8 @@ def sample_users(user_time, percent, random_state=None):
     user_count = int(round(len(uniques) * fraction))
     a_sample_users = uniques[:user_count]
     b_sample_users = uniques[user_count:]
-    a_sample = user_time[user_time['uid'].isin(a_sample_users)]
-    b_sample = user_time[user_time['uid'].isin(b_sample_users)]
+    a_sample = user_time[user_time[uid_column].isin(a_sample_users)]
+    b_sample = user_time[user_time[uid_column].isin(b_sample_users)]
     samples = [a_sample, b_sample]
     return samples
 
@@ -51,10 +55,10 @@ def filter_user_bracket_file(csv_path, day_brackets=day_brackets,
     day = day_brackets[-1] + 1
     time = day * time_per_day
     user_time = read_csv(csv_path)
-    time_max = user_time['time'].max()
+    time_max = user_time[time_column].max()
     time_limit = time_max - time
-    users = user_time.groupby('uid')
-    user_time['first'] = users['time'].transform('first')
+    users = user_time.groupby(uid_column)
+    user_time['first'] = users[time_column].transform('first')
     user_time = user_time[user_time['first'] <= time_limit]
     del user_time['first']
     samples = [user_time]
@@ -87,10 +91,10 @@ def derive_file(csv_path, day_brackets=day_brackets):
     frame = read_csv(csv_path)
     groups = frame.groupby(frame.columns[0])
     frame['nth_event'] = groups.cumcount()
-    frame['absence_time'] = groups['time'].diff()
-    frame['day'] = (frame['time'] - groups['time'].transform('first')) / time_per_day
+    frame['absence_time'] = groups[time_column].diff()
+    frame['day'] = (frame[time_column] - groups[time_column].transform('first')) / time_per_day
     frame['day'] = frame['day'].astype(int)
-    frame['no_progress_times'] = sum_no_progress_times(frame['time'], frame['event'])
+    frame['no_progress_times'] = sum_no_progress_times(frame[time_column], frame[event_column])
     frame['bracket'] = frame['day'] / day_brackets[0]
     frame['bracket'] = frame['bracket'].astype(int)
     return frame
@@ -98,13 +102,13 @@ def derive_file(csv_path, day_brackets=day_brackets):
 
 def aggregate(frame, day_brackets=day_brackets):
     names = format_names(day_brackets)
-    uid_bracket = frame.groupby(['uid', 'bracket'])
-    uid = frame.groupby('uid')
+    uid_bracket = frame.groupby([uid_column, 'bracket'])
+    uid = frame.groupby(uid_column)
     properties = defaultdict(list)
-    properties['uid'] = uid.groups.keys()
+    properties[uid_column] = uid.groups.keys()
     bracket_max = frame['bracket'].max()
     time_bracket = day_brackets[0] * time_per_day
-    for uid in properties['uid']:
+    for uid in properties[uid_column]:
         for name in names:
             properties[name].append(0)
         for time in time_names:
@@ -112,11 +116,11 @@ def aggregate(frame, day_brackets=day_brackets):
             properties[time + '_current'].append(0)
     names_length = len(names)
     for uid, bracket in uid_bracket.groups:
-        uid_index = properties['uid'].index(uid)
+        uid_index = properties[uid_column].index(uid)
         if bracket < names_length:
             try:
                 name = names[bracket]
-                in_bracket = frame[(frame['uid'] == uid) & (frame['bracket'] == bracket)]
+                in_bracket = frame[(frame[uid_column] == uid) & (frame['bracket'] == bracket)]
                 days = in_bracket['day']
                 properties[name][uid_index] = days.nunique()
             except:
@@ -134,7 +138,7 @@ def aggregate(frame, day_brackets=day_brackets):
                     if isnan(time_max):
                         time_max = -1
                     properties[time + '_current'][uid_index] = time_bracket - (time_max - time_min)
-    columns = ['uid']
+    columns = [uid_column]
     columns.extend(names)
     for time in time_names:
         columns.append(time)
@@ -188,10 +192,10 @@ def features_classes(aggregated, day_brackets=day_brackets, feature_count=2, is_
             else:
                 return 0
         classes = array([binary(cls) for cls in classes])
-    ## features = set_dimension(features, 2)
+    threshold = VarianceThreshold()
+    features_vary = threshold.fit_transform(features)
     best = SelectKBest(f_classif, k=feature_count)
-    best_features = best.fit_transform(features, classes)
-    ## best_features = set_dimension(best_features, 2)
+    best_features = best.fit_transform(features_vary, classes)
     if is_verbose:
         print('features_classes: features: %r\n    scores %r\n    p-values %r\n    support %r' % (
             feature_names, best.scores_, best.pvalues_, best.get_support()))
@@ -240,7 +244,7 @@ def set_dimension(table, min_row_length, max_row_length = None):
     return shaped
 
 
-def plot(csv_path, is_verbose=True):
+def plot(csv_path, is_verbose=True, random_state=None):
     from plot_classifier_comparison import plot_comparison, all_classifiers, sample_classifiers
     retained = read_csv(csv_path)
     feature_counts = [2, 1]
@@ -248,8 +252,24 @@ def plot(csv_path, is_verbose=True):
     for feature_count in feature_counts:
         features, classes = features_classes(retained, feature_count=feature_count, is_verbose=is_verbose)
         datasets.append((features, classes))
+    for feature_count in feature_counts:
+        datasets.append(random_features_classes(feature_count, random_state=random_state))
     names, classifiers = all_classifiers()
     plot_comparison(datasets, names, classifiers, is_verbose=is_verbose, output_path=csv_path + '.png')
+
+
+def random_features_classes(feature_count=2, sample_count=256, class_count=2, random_state=None):
+    if random_state:
+        seed(random_state)
+    features = []
+    classes = []
+    for sample in range(sample_count):
+        feature_row = []
+        for feature in range(feature_count):
+            feature_row.append(random())
+        features.append(feature_row)
+        classes.append(randrange(class_count))
+    return features, classes
 
 
 def retention_csv(args):
@@ -273,7 +293,7 @@ def retention_csv(args):
         else:
             result = decision_tree_retain_1_file(parsed.csv_path)
         if parsed.plot:
-            plot(parsed.csv_path)
+            plot(parsed.csv_path, random_state=parsed.random_state)
     if parsed.test:
         from doctest import testfile
         testfile('README.md')
