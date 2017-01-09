@@ -249,7 +249,8 @@ def set_dimension(table, min_row_length, max_row_length = None):
     return shaped
 
 
-def plot(csv_path, is_verbose=True, random_state=None, classifier_index=-1):
+def plot(csv_path, is_verbose=True, random_state=None, classifier_index=-1,
+        features_classes = features_classes):
     from plot_classifier_comparison import plot_comparison, all_classifiers, sample_classifiers
     retained = read_csv(csv_path)
     if classifier_index <= -1:
