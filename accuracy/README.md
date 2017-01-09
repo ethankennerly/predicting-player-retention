@@ -27,7 +27,9 @@ Adaptive Learning published a prediction algorithm.
 
 ### Outline
 
-Aggregate students into their first five answers.
+TODO:
+
+Aggregate students into their first five answers for students with five answers or more.
 
 For each student answer:
     item
@@ -43,6 +45,23 @@ All columns except 5th answer correct are potential features.
 Select two best features.
 
 Score the model.
+
+### Details
+
+#### Aggregating students
+
+Install MatMat dataset into directory:
+
+    data
+
+    >>> from os.path import exists
+    >>> exists('data/answers.csv')
+    True
+
+    >>> from accuracy import *
+    >>> accuracy_csv_string('--aggregate_path test/student_answers_sample.csv test/answers_sample.csv')
+    >>> print(open('test/student_answers_sample.csv').read())
+    TODO
 
 
 # Related work
