@@ -192,6 +192,11 @@ def features_classes(aggregated, day_brackets=day_brackets, feature_count=2, is_
             else:
                 return 0
         classes = array([binary(cls) for cls in classes])
+    return best_feature_classes(features, classes, feature_names,
+        feature_count = feature_count, is_verbose = is_verbose)
+
+
+def best_feature_classes(features, classes, feature_names, feature_count = 2, is_verbose = False):
     threshold = VarianceThreshold()
     features_vary = threshold.fit_transform(features)
     best = SelectKBest(f_classif, k=feature_count)

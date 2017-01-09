@@ -27,14 +27,14 @@ Adaptive Learning published a prediction algorithm.
 
 ### Outline
 
-TODO:
-
 Aggregate students into their first five answers for students with five answers or more.
 
 For each student answer:
     item
     response_time
     correct
+
+TODO:
 
 Split students into training and test datasets.
 
