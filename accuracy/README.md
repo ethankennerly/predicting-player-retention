@@ -54,14 +54,26 @@ Install MatMat dataset into directory:
 
     data
 
+There is an answers CSV there:
+
     >>> from os.path import exists
     >>> exists('data/answers.csv')
     True
 
+To aggregate first few student answers:
+
+    python accuracy.py --aggregate_path data/student_answers.csv data/answers.csv
+
+That can take a while.  To quickly test, aggregated students by correct, response time, and item in first 2 answers.
+
     >>> from accuracy import *
-    >>> accuracy_csv_string('--aggregate_path test/student_answers_sample.csv test/answers_sample.csv')
+    >>> accuracy_csv_string('--aggregate_path test/student_answers_sample.csv test/answers_sample.csv --answer_count 2')
     >>> print(open('test/student_answers_sample.csv').read())
-    TODO
+    correct_0,correct_1,item_0,item_1,response_time_0,response_time_1,student
+    0,0,38,51,57276,17068,33480
+    0,1,685,148,19878,12359,33481
+    0,1,1737,1787,3911,10101,33482
+    <BLANKLINE>
 
 
 # Related work
