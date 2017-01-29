@@ -75,53 +75,13 @@ That can take a while.  To quickly test, aggregated students by correct, respons
 
     >>> from accuracy import *
     >>> accuracy_csv_string('--aggregate_path test/student_answers_sample.csv test/answers_sample.csv --answer_count 2')
-    >>> print(open('test/student_answers_sample.csv').read())
-    correct_0,correct_1,item_0,item_1,response_time_0,response_time_1,student
-    1,1,54,56,15060,9735,33183
-    1,1,2,22,45203,63256,33184
-    0,0,38,51,57276,17068,33480
-    0,1,685,148,19878,12359,33481
-    0,1,1737,1787,3911,10101,33482
-    1,1,1434,1501,12542,7564,33483
-    1,1,1737,1822,9419,4030,33485
-    1,1,47,50,9800,5667,33486
-    1,1,1737,1822,6066,3114,33489
-    1,1,47,50,25734,6398,33490
-    1,1,1448,1485,10910,7234,33491
-    0,0,1434,1562,10971,14415,33492
-    1,1,1409,1672,12076,7734,33495
-    1,1,1434,1501,6508,7346,33496
-    1,1,1674,1367,46085,30704,33497
-    0,1,47,50,4618,4364,33498
-    1,1,1723,1434,11147,5973,33499
-    0,0,356,667,15785,39712,33500
-    1,1,1562,1554,16716,19971,33501
-    1,0,1737,1822,8686,8443,33502
-    1,1,1562,1309,13582,11400,33504
-    1,1,1723,1822,13271,5125,33505
-    1,1,1696,1423,6356,6342,33506
-    0,1,50,47,16681,19024,33507
-    0,0,356,447,21742,26750,33508
-    1,1,1723,1696,6057,5284,33509
-    1,1,1278,1367,37351,6602,33510
-    1,1,1043,1698,51156,29908,33512
-    1,1,512,361,4405,4367,33522
-    1,0,356,243,13272,6337,33532
-    1,1,516,416,18608,8886,33533
-    1,0,50,41,8663,2920,33537
-    1,1,1562,1822,15852,144131,33538
-    1,0,1045,1562,19888,4374,33540
-    1,1,50,47,43807,23277,33541
-    1,0,1434,1501,19657,11984,33542
-    1,1,1737,1822,6639,3646,33543
-    1,0,1045,1689,22849,12862,33544
-    1,0,1111,1492,6607,12794,33545
-    0,1,50,47,5361,16895,33546
-    0,1,880,1723,13279,14234,33547
-    1,1,1562,1434,21309,21573,33548
-    1,0,1434,1505,35337,4099,33549
-    1,1,1309,1587,25735,12501,33550
-    1,1,923,1528,14128,36749,33551
+    >>> lines = open('test/student_answers_sample.csv').readlines()
+    >>> print(''.join(lines[0:5]))
+    correct_0,correct_1,item_0,item_1,response_time_0,response_time_1,student,correct_mean,response_time_mean
+    1,1,54,56,15060,9735,33183,1.0,15060.0
+    1,1,2,22,45203,63256,33184,1.0,45203.0
+    0,0,38,51,57276,17068,33480,0.0,57276.0
+    0,1,685,148,19878,12359,33481,0.0,19878.0
     <BLANKLINE>
 
 #### Plotting accuracy prediction
@@ -131,7 +91,7 @@ That can take a while.  To quickly test, aggregated students by correct, respons
 Quick example of usage:
 
     >>> accuracy_csv_string('--plot test/student_answers_sample.csv --answer_count 2') #doctest: +ELLIPSIS
-    features_classes: features: ['correct_0', 'item_0', 'item_1', 'response_time_0', 'response_time_1']
+    features_classes: features: ['correct_0', 'item_0', 'item_1', 'response_time_0', 'response_time_1', 'correct_mean', 'response_time_mean']
     ...
     plot_comparison: Saved figure to: 'test/student_answers_sample.csv.png'
 
@@ -147,7 +107,11 @@ Aggregate accuracy of 5 answers is 82%.  The decision tree predicts 84% of the t
     accuracy
     0.76
 
-Would 9 answers increase accuracy of predicting 10th answer?
+9 answers did not better predict 10th answer.
+
+Mean accuracy in 9 answers did not better predict 10th answer.
+
+Mean response time in 9 answers did not better predict 10th answer.
 
 Would principal component analysis increase predicted accuracy?
 <https://www.analyticsvidhya.com/blog/2016/03/practical-guide-principal-component-analysis-python/>

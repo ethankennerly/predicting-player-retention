@@ -14,6 +14,7 @@ correct_column = 'correct'
 item_column = 'item'
 response_time_column = 'response_time'
 student_column = 'student'
+accuracy_column = 'correct_mean'
 
 
 def aggregate_answers(csv_path, aggregate_path, answer_count = answer_count):
@@ -45,6 +46,8 @@ def aggregate_answers(csv_path, aggregate_path, answer_count = answer_count):
             item = '%s_%s' % (item_column, answer_index)
             properties[item].append(items[answer_index])
     student_answers = DataFrame(properties)
+    append_mean_column(student_answers, answer_count - 1, correct_column)
+    append_mean_column(student_answers, answer_count - 1, response_time_column)
     student_answers.to_csv(aggregate_path, index=False)
 
 
@@ -63,14 +66,8 @@ def plot_accuracy(csv_path, answer_count = answer_count, is_verbose = True,
 
 
 def summarize(csv_path, answer_count = answer_count, is_verbose = False):
-    accuracy_column = 'accuracy'
     answers = read_csv(csv_path)
-    correct_columns = []
-    for answer_index in range(answer_count):
-        correct_columns.append('correct_%s' % answer_index)
-    answer_count_float = float(answer_count)
-    answers['correct_sum'] = answers[correct_columns].sum(axis=1)
-    answers[accuracy_column] = answers['correct_sum'] / answer_count_float
+    append_mean_column(answers, answer_count, correct_column)
     if is_verbose:
         print(answers[correct_columns].head())
         print(answers.head())
@@ -78,6 +75,15 @@ def summarize(csv_path, answer_count = answer_count, is_verbose = False):
     accuracy = round(accuracy, 2)
     accuracy_text = 'accuracy\n%s' % accuracy
     return accuracy_text
+
+
+def append_mean_column(answers, answer_count, input_column):
+    input_columns = []
+    for answer_index in range(answer_count):
+        input_columns.append('%s_%s' % (input_column, answer_index))
+    answer_count_float = float(answer_count)
+    input_sum = answers[input_columns].sum(axis=1)
+    answers[input_column + '_mean'] = input_sum / answer_count_float
 
 
 def accuracy_csv(args):
