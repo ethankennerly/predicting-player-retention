@@ -62,15 +62,34 @@ def plot_accuracy(csv_path, answer_count = answer_count, is_verbose = True,
     plot(csv_path, features_classes = features_classes, classifier_index = classifier_index)
 
 
+def summarize(csv_path, answer_count = answer_count, is_verbose = False):
+    accuracy_column = 'accuracy'
+    answers = read_csv(csv_path)
+    correct_columns = []
+    for answer_index in range(answer_count):
+        correct_columns.append('correct_%s' % answer_index)
+    answer_count_float = float(answer_count)
+    answers['correct_sum'] = answers[correct_columns].sum(axis=1)
+    answers[accuracy_column] = answers['correct_sum'] / answer_count_float
+    if is_verbose:
+        print(answers[correct_columns].head())
+        print(answers.head())
+    accuracy = answers[accuracy_column].mean()
+    accuracy = round(accuracy, 2)
+    accuracy_text = 'accuracy\n%s' % accuracy
+    return accuracy_text
+
+
 def accuracy_csv(args):
     from argparse import ArgumentParser
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('csv_path', nargs='?', help='Where to read MatMat CSV to aggregate.')
     parser.add_argument('--answer_count', type=int, default=answer_count, help='Number of answers to filter students with.')
     parser.add_argument('--aggregate_path', help='Aggregate students CSV to this file.  Filter students with answer_count or more answers.')
-    parser.add_argument('--plot', action='store_true', help='Plot comparison of classifiers.')
     parser.add_argument('--classifier_index', default=-1, type=int, help='Index of classifier to plot, useful when data is too big to plot multiple classifiers.')
-    parser.add_argument('--is_verbose', action='store_true', help='Log steps.')
+    parser.add_argument('--verbose', action='store_true', help='Log steps.')
+    parser.add_argument('--plot', action='store_true', help='Plot comparison of classifiers.')
+    parser.add_argument('--summarize', action='store_true', help='Print average accuracy per student from aggregated student CSV.')
     parser.add_argument('--test', action='store_true', help='Check examples in README.md.')
     parsed = parser.parse_args(args)
     result = None
@@ -79,8 +98,10 @@ def accuracy_csv(args):
             result = aggregate_answers(parsed.csv_path, parsed.aggregate_path, answer_count = parsed.answer_count)
         elif parsed.plot:
             result = plot_accuracy(parsed.csv_path,
-                answer_count = parsed.answer_count, is_verbose = parsed.is_verbose,
+                answer_count = parsed.answer_count, is_verbose = parsed.verbose,
                 classifier_index = parsed.classifier_index)
+        if parsed.summarize:
+            result = summarize(parsed.csv_path, answer_count = parsed.answer_count, is_verbose = parsed.verbose)
     if parsed.test:
         from doctest import testfile
         testfile('README.md')

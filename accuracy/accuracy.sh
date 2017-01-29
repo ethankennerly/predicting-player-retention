@@ -2,6 +2,7 @@
 
 echo "accuracy.sh expects MatMat answers data.  See README.md"
 python accuracy.py --aggregate_path data/student_answers.csv data/answers.csv
+python accuracy.py --summarize data/student_answers.csv
 python accuracy.py --plot data/student_answers.csv --classifier_index 0
 python accuracy.py --plot data/student_answers.csv --classifier_index 1
 python accuracy.py --plot data/student_answers.csv --classifier_index 2

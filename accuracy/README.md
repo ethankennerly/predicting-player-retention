@@ -134,9 +134,30 @@ Quick example of usage:
     features_classes: features: ['correct_0', 'item_0', 'item_1', 'response_time_0', 'response_time_1']
     ...
     plot_comparison: Saved figure to: 'test/student_answers_sample.csv.png'
-    'test/student_answers_sample.csv.png'
 
 ![](test/student_answers_sample.csv.png)
+
+
+
+## Future directions
+
+Aggregate accuracy of 5 answers is 82%.  The decision tree predicts 84% of the time.  The difference between the predictor and mean accuracy is negligible.
+
+    >>> print(accuracy_csv_string('--summarize test/student_answers_sample.csv --answer_count 2'))
+    accuracy
+    0.76
+
+Would 9 answers increase accuracy of predicting 10th answer?
+
+Would principal component analysis increase predicted accuracy?
+<https://www.analyticsvidhya.com/blog/2016/03/practical-guide-principal-component-analysis-python/>
+<https://plot.ly/ipython-notebooks/principal-component-analysis/>
+<http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html>
+
+What is second week retention rate?  What is second day in first week retention rate?
+
+How well does 10 question accuracy or any other factors predict second week retention?  Second day in first week retention?
+
 
 # Related work
 
