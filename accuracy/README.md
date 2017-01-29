@@ -126,7 +126,16 @@ Principal component analysis did not better predict 10th answer.
     plot_comparison: Saved figure to: 'test/student_answers_sample.csv.png'
 
 
-Would 4 principal components better predict 10th answer than 2 components?
+8 principal components did not better predict 10th answer than 2 components.
+
+Principal component analysis needs more samples and features than components, so here is an example with 4 components on 2 answers.
+
+    >>> print(accuracy_csv_string('--pca --feature_count 4 --plot test/student_answers_sample.csv --answer_count 2')) #doctest: +ELLIPSIS
+    AdaBoost 0.61
+
+Running on the dataset also yielded at most score of 86%.
+
+    bash accuracy.sh
 
 What is second week retention rate?  What is second day in first week retention rate?
 

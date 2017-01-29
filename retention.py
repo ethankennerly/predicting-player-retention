@@ -250,13 +250,13 @@ def set_dimension(table, min_row_length, max_row_length = None):
 
 
 def plot(csv_path, is_verbose=True, random_state=None, classifier_index=-1,
-        features_classes = features_classes):
+        features_classes = features_classes, feature_count = 2):
     from plot_classifier_comparison import plot_comparison, all_classifiers, sample_classifiers
     retained = read_csv(csv_path)
     if classifier_index <= -1:
-        feature_counts = [2, 1]
+        feature_counts = [feature_count, 1]
     else:
-        feature_counts = [2]
+        feature_counts = [feature_count]
     datasets = []
     for feature_count in feature_counts:
         features, classes = features_classes(retained, feature_count=feature_count, is_verbose=is_verbose)

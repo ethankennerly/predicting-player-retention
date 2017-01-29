@@ -8,9 +8,11 @@ from sys import path
 path.append('..')
 from retention import best_feature_classes, plot
 from principal import principal_components, explains_text
+from score import score_text
 
 
 answer_count = 5
+feature_count = 2
 correct_column = 'correct'
 item_column = 'item'
 response_time_column = 'response_time'
@@ -53,8 +55,8 @@ def aggregate_answers(csv_path, aggregate_path, answer_count = answer_count):
 
 
 def plot_accuracy(csv_path, answer_count = answer_count, is_verbose = True,
-        classifier_index = -1, is_pca = False):
-    def features_classes(student_answers, feature_count=2, is_verbose=is_verbose):
+        classifier_index = -1, is_pca = False, feature_count=feature_count):
+    def features_classes(student_answers, feature_count=feature_count, is_verbose=is_verbose):
         class_name = '%s_%s' % (correct_column, answer_count - 1)
         feature_names = [column for column in student_answers.columns]
         feature_names.remove(class_name)
@@ -69,7 +71,14 @@ def plot_accuracy(csv_path, answer_count = answer_count, is_verbose = True,
                 for index in range(feature_count)]
         return best_feature_classes(features, classes, feature_names,
             feature_count = feature_count, is_verbose = is_verbose)
-    plot(csv_path, features_classes = features_classes, classifier_index = classifier_index)
+    if feature_count <= 2:
+        plot(csv_path,
+            features_classes = features_classes,
+            classifier_index = classifier_index,
+            feature_count = feature_count)
+    else:
+        features, classes = features_classes(read_csv(csv_path))
+        return score_text(features, classes, classifier_index)
 
 
 def summarize(csv_path, answer_count = answer_count, is_verbose = False):
@@ -100,11 +109,12 @@ def accuracy_csv(args):
     parser.add_argument('--answer_count', type=int, default=answer_count, help='Number of answers to filter students with.')
     parser.add_argument('--aggregate_path', help='Aggregate students CSV to this file.  Filter students with answer_count or more answers.')
     parser.add_argument('--classifier_index', default=-1, type=int, help='Index of classifier to plot, useful when data is too big to plot multiple classifiers.')
-    parser.add_argument('--verbose', action='store_true', help='Log steps.')
+    parser.add_argument('--feature_count', default=feature_count, type=int, help='Maximum number of features or components to classify from.')
     parser.add_argument('--pca', action='store_true', help='Analyze principal components of columns before predicting.')
     parser.add_argument('--plot', action='store_true', help='Plot comparison of classifiers.')
     parser.add_argument('--summarize', action='store_true', help='Print average accuracy per student from aggregated student CSV.')
     parser.add_argument('--test', action='store_true', help='Check examples in README.md.')
+    parser.add_argument('--verbose', action='store_true', help='Log steps.')
     parsed = parser.parse_args(args)
     result = None
     if parsed.csv_path:
@@ -117,7 +127,8 @@ def accuracy_csv(args):
                 answer_count = parsed.answer_count,
                 is_verbose = parsed.verbose,
                 is_pca = parsed.pca,
-                classifier_index = parsed.classifier_index)
+                classifier_index = parsed.classifier_index,
+                feature_count = parsed.feature_count)
         if parsed.summarize:
             result = summarize(parsed.csv_path,
                 answer_count = parsed.answer_count,

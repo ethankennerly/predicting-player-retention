@@ -73,6 +73,7 @@ def sample_classifiers():
 
 
 def all_classifiers():
+    max_depth = 5
     names = [
         "Decision Tree",
         "Nearest Neighbors",
@@ -86,10 +87,10 @@ def all_classifiers():
         "AdaBoost",
     ]
     classifiers = [
-        DecisionTreeClassifier(max_depth=5),
+        DecisionTreeClassifier(max_depth=max_depth),
         KNeighborsClassifier(3),
         GaussianProcessClassifier(1.0 * RBF(1.0), warm_start=True),
-        RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
+        RandomForestClassifier(max_depth=max_depth, n_estimators=10, max_features=1),
         QuadraticDiscriminantAnalysis(),
         MLPClassifier(alpha=1),
         SVC(kernel="linear", C=0.025, decision_function_shape='ovr'),
