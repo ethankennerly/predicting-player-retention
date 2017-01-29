@@ -113,10 +113,20 @@ Mean accuracy in 9 answers did not better predict 10th answer.
 
 Mean response time in 9 answers did not better predict 10th answer.
 
-Would principal component analysis increase predicted accuracy?
+Principal component analysis did not better predict 10th answer.
 <https://www.analyticsvidhya.com/blog/2016/03/practical-guide-principal-component-analysis-python/>
 <https://plot.ly/ipython-notebooks/principal-component-analysis/>
 <http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html>
+
+    >>> accuracy_csv_string('--pca --plot test/student_answers_sample.csv --answer_count 2') #doctest: +ELLIPSIS
+    Cumulative variance explained with number of components:
+    ...
+    features_classes: features: ['component_0', 'component_1']
+    ...
+    plot_comparison: Saved figure to: 'test/student_answers_sample.csv.png'
+
+
+Would 4 principal components better predict 10th answer than 2 components?
 
 What is second week retention rate?  What is second day in first week retention rate?
 

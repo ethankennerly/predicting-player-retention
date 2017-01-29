@@ -7,6 +7,7 @@ from pandas import DataFrame, read_csv
 from sys import path
 path.append('..')
 from retention import best_feature_classes, plot
+from principal import principal_components, explains_text
 
 
 answer_count = 5
@@ -52,14 +53,20 @@ def aggregate_answers(csv_path, aggregate_path, answer_count = answer_count):
 
 
 def plot_accuracy(csv_path, answer_count = answer_count, is_verbose = True,
-        classifier_index = -1):
+        classifier_index = -1, is_pca = False):
     def features_classes(student_answers, feature_count=2, is_verbose=is_verbose):
-        class_name = 'correct_%s' % (answer_count - 1)
+        class_name = '%s_%s' % (correct_column, answer_count - 1)
         feature_names = [column for column in student_answers.columns]
         feature_names.remove(class_name)
         feature_names.remove(student_column)
         features = student_answers[feature_names].values
         classes = student_answers[[class_name]].values
+        if is_pca:
+            if is_verbose:
+                print(explains_text(features))
+            features = principal_components(features, feature_count)
+            feature_names = ['component_%s' % index
+                for index in range(feature_count)]
         return best_feature_classes(features, classes, feature_names,
             feature_count = feature_count, is_verbose = is_verbose)
     plot(csv_path, features_classes = features_classes, classifier_index = classifier_index)
@@ -94,6 +101,7 @@ def accuracy_csv(args):
     parser.add_argument('--aggregate_path', help='Aggregate students CSV to this file.  Filter students with answer_count or more answers.')
     parser.add_argument('--classifier_index', default=-1, type=int, help='Index of classifier to plot, useful when data is too big to plot multiple classifiers.')
     parser.add_argument('--verbose', action='store_true', help='Log steps.')
+    parser.add_argument('--pca', action='store_true', help='Analyze principal components of columns before predicting.')
     parser.add_argument('--plot', action='store_true', help='Plot comparison of classifiers.')
     parser.add_argument('--summarize', action='store_true', help='Print average accuracy per student from aggregated student CSV.')
     parser.add_argument('--test', action='store_true', help='Check examples in README.md.')
@@ -101,13 +109,19 @@ def accuracy_csv(args):
     result = None
     if parsed.csv_path:
         if parsed.aggregate_path:
-            result = aggregate_answers(parsed.csv_path, parsed.aggregate_path, answer_count = parsed.answer_count)
+            result = aggregate_answers(parsed.csv_path,
+                parsed.aggregate_path,
+                answer_count = parsed.answer_count)
         elif parsed.plot:
             result = plot_accuracy(parsed.csv_path,
-                answer_count = parsed.answer_count, is_verbose = parsed.verbose,
+                answer_count = parsed.answer_count,
+                is_verbose = parsed.verbose,
+                is_pca = parsed.pca,
                 classifier_index = parsed.classifier_index)
         if parsed.summarize:
-            result = summarize(parsed.csv_path, answer_count = parsed.answer_count, is_verbose = parsed.verbose)
+            result = summarize(parsed.csv_path,
+                answer_count = parsed.answer_count,
+                is_verbose = parsed.verbose)
     if parsed.test:
         from doctest import testfile
         testfile('README.md')
