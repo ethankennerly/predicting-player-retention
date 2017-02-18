@@ -3,8 +3,10 @@ Predict player accuracy with SciKit.
 See README.md
 """
 
+from argparse import ArgumentParser
+from doctest import testfile
 from pandas import DataFrame, read_csv
-from sys import path
+from sys import argv, path
 path.append('..')
 from retention import best_feature_classes, plot
 from principal import principal_components, explains_text
@@ -103,7 +105,6 @@ def append_mean_column(answers, answer_count, input_column):
 
 
 def accuracy_csv(args):
-    from argparse import ArgumentParser
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('csv_path', nargs='?', help='Where to read MatMat CSV to aggregate.')
     parser.add_argument('--answer_count', type=int, default=answer_count, help='Number of answers to filter students with.')
@@ -134,7 +135,6 @@ def accuracy_csv(args):
                 answer_count = parsed.answer_count,
                 is_verbose = parsed.verbose)
     if parsed.test:
-        from doctest import testfile
         testfile('README.md')
     return result
 
@@ -145,7 +145,6 @@ def accuracy_csv_string(args_text):
 
 
 if '__main__' == __name__:
-    from sys import argv
     result = accuracy_csv(argv[1:])
     if result:
         print(result)
