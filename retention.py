@@ -28,7 +28,6 @@ time_column = 'time'
 event_column = 'event'
 
 
-
 def to_csv(frame):
     stream = StringIO()
     frame.to_csv(stream, index=False)

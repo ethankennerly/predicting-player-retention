@@ -137,6 +137,10 @@ Running on the dataset also yielded at most score of 86%.
 
     bash accuracy.sh
 
+## Retention
+
+Where is the bottleneck in the funnel of answers per user?
+
 What is second week retention rate?  What is second day in first week retention rate?
 
 How well does 10 question accuracy or any other factors predict second week retention?  Second day in first week retention?
