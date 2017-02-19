@@ -1,6 +1,7 @@
+documentation_path = 'answer_retention.md'
 """
-See retention.md
-"""
+See %s
+""" % documentation_path
 
 
 from argparse import ArgumentParser
@@ -9,6 +10,12 @@ from numpy import cumsum, histogram
 from os.path import splitext
 from pandas import DataFrame, read_csv
 from sys import argv
+
+import sys
+sys.path.insert(0, '..')
+
+from retention import best_feature_classes, plot
+from score import score_text
 
 
 def reverse(items):
@@ -82,7 +89,7 @@ def retention_args(args):
     parser.add_argument('--funnel_csv', action='store_true',
         help='From CSV count number of students who answered at least this many times.')
     parser.add_argument('--test', action='store_true',
-        help='Compare examples in retention.md')
+        help='Compare examples in %s' % documentation_path)
     parser.add_argument('answer_csv', nargs='?',
         help='CSV of student answers.')
     parsed = parser.parse_args(args)
@@ -92,7 +99,7 @@ def retention_args(args):
     if parsed.feature:
         result = feature(parsed.answer_csv)
     if parsed.test:
-        testfile('retention.md')
+        testfile(documentation_path)
     return result
 
 

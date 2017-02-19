@@ -5,7 +5,7 @@
 
 What is the per-answer retention rate funnel?
 
-    >>> from retention import *
+    >>> from answer_retention import *
 
 Using the data sample mentioned in [README.md](README.md).
 
@@ -44,7 +44,7 @@ The funnel step retention shows a drop off after the first and each tenth answer
 
 Example from:
 
-    python retention.py --funnel data/answers.csv
+    python answer_retention.py --funnel data/answers.csv
 
     answer_count,retention_count,step_retention,total_retention
     1,18847,1.000,1.000
