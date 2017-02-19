@@ -1,5 +1,8 @@
 # Predicting retention
 
+
+## Funnel
+
 What is the per-answer retention rate funnel?
 
     >>> from retention import *
@@ -8,62 +11,58 @@ Using the data sample mentioned in [README.md](README.md).
 
 Summarize funnel in a test sample file:
 
-    >>> funnel_args = '--funnel test/answers_sample.csv'.split()
+    >>> funnel_args = '--funnel test/answers_sample_small.csv'.split()
     >>> print(retention_args(funnel_args))
-    test/answers_sample.funnel.csv
-    answer_count,cumulative_frequency
-    1,46
-    2,45
-    3,44
-    4,43
-    5,41
-    6,41
-    7,41
-    8,40
-    9,40
-    10,40
-    11,40
-    12,40
-    13,40
-    14,40
-    15,40
-    16,40
-    17,38
-    18,37
-    19,37
-    20,37
-    21,37
-    22,37
-    23,33
-    24,32
-    25,29
-    26,29
-    27,29
-    28,29
-    29,28
-    30,28
-    31,28
-    32,26
-    33,23
-    34,23
-    35,22
-    36,22
-    37,20
-    38,20
-    39,19
-    40,10
-    41,10
-    42,10
-    43,9
-    44,6
-    45,4
-    46,4
+    test/answers_sample_small.funnel.csv
+    answer_count,retention_count,step_retention,total_retention
+    1,2,1.000,1.000
+    2,2,1.000,1.000
+    3,1,0.500,0.500
     <BLANKLINE>
 
-This relies on counting frequencies less than or equal to a value.
+The retention count depends on counting frequencies less than or equal to a value.
 
-    >>> reverse_cumulative_range([1, 4, 2, 2])
-    array([4, 3, 1, 1])
+    >>> reverse_cumulative_frequency([1, 4, 2, 2, 8])
+    array([5, 4, 2, 2, 1, 1, 1, 1])
+
+    >>> reverse_cumulative_frequency([2, 3])
+    array([2, 2, 1])
+
+Total retention rate depends on retention rate.
+
+    >>> retention_counts = [5, 4, 2, 2, 1, 1, 1, 1]
+    >>> retention_rates(retention_counts)
+    [1.0, 0.8, 0.4, 0.4, 0.2, 0.2, 0.2, 0.2]
+    >>> retention_steps(retention_counts)
+    [1.0, 0.8, 0.5, 1.0, 0.5, 1.0, 1.0, 1.0]
+
+## Bottleneck
+
+The funnel step retention shows a drop off after the first and each tenth answer.
+
+Example from:
+
+    python retention.py --funnel data/answers.csv
+
+    answer_count,retention_count,step_retention,total_retention
+    1,18847,1.000,1.000
+    2,16558,0.879,0.879
+    3,15132,0.914,0.803
+    4,14151,0.935,0.751
+    5,13388,0.946,0.710
+    6,12791,0.955,0.679
+    7,12317,0.963,0.654
+    8,11968,0.972,0.635
+    9,11668,0.975,0.619
+    10,11353,0.973,0.602
+    11,8408,0.741,0.446
+    12,7971,0.948,0.423
+    13,7637,0.958,0.405
+
+The authors wrote the tenth question is an unadapted difficulty to assess learning.
+
+Or perhaps there is a session break every ten questions.
+
 
 ## Future directions
 

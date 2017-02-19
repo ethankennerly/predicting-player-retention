@@ -5,18 +5,39 @@ See retention.md
 
 from argparse import ArgumentParser
 from doctest import testfile
-from numpy import histogram, hstack
+from numpy import cumsum, histogram
 from os.path import splitext
 from pandas import DataFrame, read_csv
-# from scipy.stats import cumfreq
 from sys import argv
 
 
-def reverse_cumulative_range(items):
-    counts, binedge = histogram(items, bins=len(items))
-    reverse = counts[::-1]
-    cumulative = reverse.cumsum()
-    return cumulative[::-1]
+def reverse(items):
+    return items[::-1]
+
+
+def reverse_cumulative_frequency(items):
+    bins = range(1, max(items) + 2)
+    counts, binedge = histogram(items, bins=bins)
+    return reverse(reverse(counts).cumsum())
+
+
+def retention_rates(retention_counts):
+    rates = []
+    total = float(retention_counts[0])
+    for count in retention_counts:
+        rate = count / total
+        rates.append(rate)
+    return rates
+
+
+def retention_steps(retention_counts):
+    rates = []
+    previous = float(retention_counts[0])
+    for count in retention_counts:
+        rate = count / previous
+        rates.append(rate)
+        previous = float(count)
+    return rates
 
 
 def funnel(answer_csv):
@@ -25,13 +46,15 @@ def funnel(answer_csv):
     answer_counts = []
     funnel_properties = {}
     for student_id, student_group in students:
-        answer_count = -len(student_group)
+        answer_count = len(student_group)
         answer_counts.append(answer_count)
-    funnel_properties['answer_count'] = range(1, len(answer_counts) + 1)
-    funnel_properties['cumulative_frequency'] = reverse_cumulative_range(answer_counts)
+    funnel_properties['answer_count'] = range(1, max(answer_counts) + 1)
+    funnel_properties['retention_count'] = reverse_cumulative_frequency(answer_counts)
+    funnel_properties['total_retention'] = retention_rates(funnel_properties['retention_count'])
+    funnel_properties['step_retention'] = retention_steps(funnel_properties['retention_count'])
     funnel = DataFrame(funnel_properties)
     funnel_csv = '%s.funnel.csv' % splitext(answer_csv)[0]
-    funnel.to_csv(funnel_csv, index=False)
+    funnel.to_csv(funnel_csv, index=False, float_format='%.3f')
     return '%s\n%s' % (funnel_csv, open(funnel_csv).read())
 
 
