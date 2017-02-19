@@ -40,6 +40,21 @@ def retention_steps(retention_counts):
     return rates
 
 
+def is_future_question(answers):
+    future_questions = answers.groupby('student').cumcount(ascending=False)
+    answers['future_questions'] = future_questions
+    answers['is_future_question'] = True
+    answers.loc[answers['future_questions'] <= 0, 'is_future_question'] = False
+
+
+def feature(answer_csv):
+    answers = read_csv(answer_csv)
+    is_future_question(answers)
+    feature_csv = '%s.feature.csv' % splitext(answer_csv)[0]
+    answers.to_csv(feature_csv, index=False, float_format='%.3f')
+    return '%s\n%s' % (feature_csv, open(feature_csv).read())
+
+
 def funnel(answer_csv):
     answers = read_csv(answer_csv)
     students = answers.groupby('student')
@@ -60,13 +75,20 @@ def funnel(answer_csv):
 
 def retention_args(args):
     parser = ArgumentParser(description=__doc__)
-    parser.add_argument('--funnel_csv', action='store_true', help='From CSV count number of students who answered at least this many times.')
-    parser.add_argument('--test', action='store_true', help='Compare examples in retention.md')
-    parser.add_argument('answer_csv', nargs='?', help='CSV of student answers.')
+    parser.add_argument('--feature', action='store_true',
+        help='Extend table with is next question answered, time, response time and correctness difference.')
+    parser.add_argument('--funnel_csv', action='store_true',
+        help='From CSV count number of students who answered at least this many times.')
+    parser.add_argument('--test', action='store_true',
+        help='Compare examples in retention.md')
+    parser.add_argument('answer_csv', nargs='?',
+        help='CSV of student answers.')
     parsed = parser.parse_args(args)
     result = None
     if parsed.funnel_csv:
         result = funnel(parsed.answer_csv)
+    if parsed.feature:
+        result = feature(parsed.answer_csv)
     if parsed.test:
         testfile('retention.md')
     return result

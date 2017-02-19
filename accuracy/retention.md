@@ -38,6 +38,8 @@ Total retention rate depends on retention rate.
 
 ## Bottleneck
 
+Where is the bottleneck in the funnel of answers per user?
+
 The funnel step retention shows a drop off after the first and each tenth answer.
 
 Example from:
@@ -64,11 +66,24 @@ The authors wrote the tenth question is an unadapted difficulty to assess learni
 Or perhaps there is a session break every ten questions.
 
 
+## Predicting step retention
+
+What features of the answer predict answering the next question?
+
+Mark each student's last question by having no future question.
+
+    >>> feature_args = '--feature test/answers_sample_small.csv'.split()
+    >>> print(retention_args(feature_args))
+    test/answers_sample_small.feature.csv
+    id,time,item,student,response_time,correct,answer,answer_expected,log,random,future_questions,is_future_question
+    273951,2016-04-17 14:12:09,38,33480,57276,0,14,13,"{""client_meta"": [[38008, ""13 selected""], [39224, ""unselected""], [49135, ""1 selected""], [55376, ""14 selected""], [57276, ""finished""]], ""device"": ""desktop""}",0,2,True
+    273952,2016-04-17 14:12:32,51,33480,17068,0,3,17,"{""client_meta"": [[11382, ""soft-keyboard:3""], [11382, ""3""], [17068, ""finished""]], ""device"": ""desktop""}",0,1,True
+    273953,2016-04-17 14:12:45,685,33481,19878,0,95,85,"{""client_meta"": [[13513, ""9""], [18550, ""95""], [19878, ""finished""]], ""device"": ""desktop""}",0,1,True
+    273954,2016-04-17 14:13:03,427,33480,15139,1,20,20,"{""client_meta"": [[12145, ""2""], [12399, ""20""], [15139, ""finished""]], ""device"": ""desktop""}",0,0,False
+    273955,2016-04-17 14:13:04,148,33481,12359,1,10,10,"{""client_meta"": [[10680, ""1""], [11409, ""10""], [12359, ""finished""]], ""device"": ""desktop""}",0,0,False
+    <BLANKLINE>
+
 ## Future directions
-
-Where is the bottleneck in the funnel of answers per user?
-
-What features of the answer predict answering again?
 
 Is this more stable when filtering out players who started in the last week of the sample?
 
