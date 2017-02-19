@@ -50,9 +50,13 @@ def is_future_question(answers):
 def feature(answer_csv):
     answers = read_csv(answer_csv)
     is_future_question(answers)
-    feature_csv = '%s.feature.csv' % splitext(answer_csv)[0]
+    return save_csv(answers, answer_csv, 'feature')
+
+
+def save_csv(answers, answer_csv, infix):
+    feature_csv = '%s.%s.csv' % (splitext(answer_csv)[0], infix)
     answers.to_csv(feature_csv, index=False, float_format='%.3f')
-    return '%s\n%s' % (feature_csv, open(feature_csv).read())
+    return '%s\n%s' % (feature_csv, ''.join(open(feature_csv).readlines()[:10]))
 
 
 def funnel(answer_csv):
@@ -68,9 +72,7 @@ def funnel(answer_csv):
     funnel_properties['total_retention'] = retention_rates(funnel_properties['retention_count'])
     funnel_properties['step_retention'] = retention_steps(funnel_properties['retention_count'])
     funnel = DataFrame(funnel_properties)
-    funnel_csv = '%s.funnel.csv' % splitext(answer_csv)[0]
-    funnel.to_csv(funnel_csv, index=False, float_format='%.3f')
-    return '%s\n%s' % (funnel_csv, open(funnel_csv).read())
+    return save_csv(funnel, answer_csv, 'funnel')
 
 
 def retention_args(args):
