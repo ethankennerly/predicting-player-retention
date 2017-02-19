@@ -9,9 +9,13 @@ from doctest import testfile
 from numpy import cumsum, histogram
 from os.path import splitext
 from pandas import DataFrame, read_csv
-from sys import argv
+from sys import argv, path
 
-from accuracy import best_feature_classes, extract_features, score_text, student_column
+from accuracy import best_feature_classes, extract_features, student_column
+from score import score
+path.insert(0, '..')
+from retention import write_pdf
+
 
 retention_class_name = 'is_future_question'
 
@@ -74,12 +78,15 @@ def predict(answer_csv, is_augment_features):
     if is_augment_features:
         augment_features(answers)
     features, classes, feature_names = extract_features(answers, retention_class_name,
-        ignore_columns = [student_column, 'log', 'time'])
+        ignore_columns = [student_column, 'log', 'time', 'future_questions'])
     feature_count = len(feature_names) / 2
     features, classes = best_feature_classes(features, classes, feature_names,
-        feature_count = feature_count)
+        feature_count = feature_count, is_verbose = True)
     classifier_index = 0
-    return score_text(features, classes, classifier_index)
+    accuracy, classifier = score(features, classes, classifier_index)
+    pdf = '%s.%s.pdf' % (splitext(answer_csv)[0], 'predict')
+    pdf_result = write_pdf(classifier, pdf)
+    return 'score %s features %s pdf %s' % (accuracy, feature_count, pdf)
 
 
 def save_csv(answers, answer_csv, infix):
