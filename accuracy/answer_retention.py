@@ -12,7 +12,7 @@ from pandas import DataFrame, read_csv
 from sys import argv, path
 
 from accuracy import best_feature_classes, extract_features, student_column
-from score import score
+from score import names, score
 path.insert(0, '..')
 from retention import write_pdf
 
@@ -73,7 +73,7 @@ def augment_features(answers):
     is_future_question(answers)
 
 
-def predict(answer_csv, is_augment_features):
+def predict(answer_csv, is_augment_features, classifier_index):
     answers = parse_answers(answer_csv)
     if is_augment_features:
         augment_features(answers)
@@ -82,11 +82,13 @@ def predict(answer_csv, is_augment_features):
     feature_count = len(feature_names) / 2
     features, classes = best_feature_classes(features, classes, feature_names,
         feature_count = feature_count, is_verbose = True)
-    classifier_index = 0
     accuracy, classifier = score(features, classes, classifier_index)
-    pdf = '%s.%s.pdf' % (splitext(answer_csv)[0], 'predict')
-    pdf_result = write_pdf(classifier, pdf)
-    return 'score %s features %s pdf %s' % (accuracy, feature_count, pdf)
+    result = '%s score %s features %s' % (names[classifier_index], accuracy, feature_count)
+    if 0 == classifier_index:
+        pdf = '%s.%s.pdf' % (splitext(answer_csv)[0], 'predict')
+        write_pdf(classifier, pdf)
+        result += ' pdf %s' % pdf
+    return result
 
 
 def save_csv(answers, answer_csv, infix):
@@ -113,6 +115,8 @@ def funnel(answer_csv):
 
 def retention_args(args):
     parser = ArgumentParser(description=__doc__)
+    parser.add_argument('--classifier_index', type=int, default=0,
+        help='Index of classifier to use.')
     parser.add_argument('--feature', action='store_true',
         help='Extend table with is next question answered, time, response time and correctness difference.')
     parser.add_argument('--funnel_csv', action='store_true',
@@ -128,7 +132,7 @@ def retention_args(args):
     if parsed.funnel_csv:
         result = funnel(parsed.answer_csv)
     if parsed.predict:
-        result = predict(parsed.answer_csv, parsed.feature)
+        result = predict(parsed.answer_csv, parsed.feature, parsed.classifier_index)
     elif parsed.feature:
         result = feature(parsed.answer_csv)
     if parsed.test:
