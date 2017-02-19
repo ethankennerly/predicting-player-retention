@@ -7,8 +7,8 @@ from argparse import ArgumentParser
 from doctest import testfile
 from pandas import DataFrame, read_csv
 from sys import argv, path
-path.append('..')
-from retention import best_feature_classes, plot
+path.insert(0, '..')
+from retention import best_feature_classes, extract_features, plot
 from principal import principal_components, explains_text
 from score import score_text
 
@@ -60,11 +60,8 @@ def plot_accuracy(csv_path, answer_count = answer_count, is_verbose = True,
         classifier_index = -1, is_pca = False, feature_count=feature_count):
     def features_classes(student_answers, feature_count=feature_count, is_verbose=is_verbose):
         class_name = '%s_%s' % (correct_column, answer_count - 1)
-        feature_names = [column for column in student_answers.columns]
-        feature_names.remove(class_name)
-        feature_names.remove(student_column)
-        features = student_answers[feature_names].values
-        classes = student_answers[[class_name]].values
+        features, classes, feature_names = extract_features(student_answers,
+            class_name, ignore_columns = [student_column])
         if is_pca:
             if is_verbose:
                 print(explains_text(features))

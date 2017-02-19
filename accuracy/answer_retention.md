@@ -36,6 +36,8 @@ Total retention rate depends on retention rate.
     >>> retention_steps(retention_counts)
     [1.0, 0.8, 0.5, 1.0, 0.5, 1.0, 1.0, 1.0]
 
+
+
 ## Bottleneck
 
 Where is the bottleneck in the funnel of answers per user?
@@ -66,9 +68,12 @@ The authors wrote the tenth question is an unadapted difficulty to assess learni
 Or perhaps there is a session break every ten questions.
 
 
+
 ## Predicting step retention
 
 What features of the answer predict answering the next question?
+
+### Extending features
 
 Mark each student's last question by having no future question.
 
@@ -82,6 +87,26 @@ Mark each student's last question by having no future question.
     273954,2016-04-17 14:13:03,427,33480,15139,1,20,20,"{""client_meta"": [[12145, ""2""], [12399, ""20""], [15139, ""finished""]], ""device"": ""desktop""}",0,0,False
     273955,2016-04-17 14:13:04,148,33481,12359,1,10,10,"{""client_meta"": [[10680, ""1""], [11409, ""10""], [12359, ""finished""]], ""device"": ""desktop""}",0,0,False
     <BLANKLINE>
+
+
+### Predicting future question from question features
+
+    >>> predict_args = '--predict --feature test/answers_sample_small.csv'.split()
+    >>> print(retention_args(predict_args))
+    Decision Tree features 4 score 1.0
+
+
+    >>> predict_corrupt_args = '--predict --feature test/answers_sample.csv'.split()
+    >>> print(retention_args(predict_corrupt_args))
+    Decision Tree features 4 score 1.0
+
+Drop corrupt answers.
+For example, this test sample has text as last answer instead of an integer.
+
+    >>> parse_answers('test/answers_sample.csv')['answer'].tail(2)
+    1022    18.0
+    1023    17.0
+    Name: answer, dtype: float64
 
 ## Future directions
 

@@ -34,6 +34,16 @@ def to_csv(frame):
     return stream.getvalue().strip()
 
 
+def extract_features(frame, class_name, ignore_columns = []):
+    feature_names = [column for column in frame.columns]
+    feature_names.remove(class_name)
+    for column in ignore_columns:
+        feature_names.remove(column)
+    features = frame[feature_names].values
+    classes = frame[[class_name]].values
+    return features, classes, feature_names
+
+
 def sample_users(user_time, percent, random_state=None):
     uniques = user_time[uid_column].unique()
     if random_state is not None:
