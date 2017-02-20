@@ -52,8 +52,10 @@ def retention_steps(retention_counts):
 def answer_history(answers):
     students = answers.groupby('student')
     answers['future_answers'] = students.cumcount(ascending=False)
-    answers['nth'] = students.cumcount()
-    answers['nth_mod_10'] = answers['nth'] % 10
+    answers['nth'] = students.cumcount() + 1
+    ## answers['nth_mod_10'] = answers['nth'] % 10
+    answers['is_10th'] = False
+    answers.loc[answers['nth'] % 10 == 0, 'is_10th'] = True
     answers[retention_class_name] = True
     answers.loc[answers['future_answers'] <= 0, retention_class_name] = False
 
