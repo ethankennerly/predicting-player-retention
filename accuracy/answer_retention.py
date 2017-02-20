@@ -53,7 +53,6 @@ def answer_history(answers):
     students = answers.groupby('student')
     answers['future_answers'] = students.cumcount(ascending=False)
     answers['nth'] = students.cumcount() + 1
-    ## answers['nth_mod_10'] = answers['nth'] % 10
     answers['is_10th'] = False
     answers.loc[answers['nth'] % 10 == 0, 'is_10th'] = True
     answers[retention_class_name] = True
@@ -83,7 +82,7 @@ def predict(answer_csv, is_augment_features, classifier_index):
         augment_features(answers)
     features, classes, feature_names = extract_features(answers, retention_class_name,
         ignore_columns = [student_column, 'log', 'time', 'future_answers'])
-    feature_count = len(feature_names) / 2
+    feature_count = len(feature_names) / 4
     features, classes = best_feature_classes(features, classes, feature_names,
         feature_count = feature_count, is_verbose = True)
     accuracy, classifier = score(features, classes, classifier_index)
