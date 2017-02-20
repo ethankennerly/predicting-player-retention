@@ -17,7 +17,7 @@ path.insert(0, '..')
 from retention import write_pdf
 
 
-retention_class_name = 'is_future_question'
+retention_class_name = 'is_future_answer'
 
 
 def reverse(items):
@@ -49,11 +49,13 @@ def retention_steps(retention_counts):
     return rates
 
 
-def is_future_question(answers):
-    future_questions = answers.groupby('student').cumcount(ascending=False)
-    answers['future_questions'] = future_questions
+def answer_history(answers):
+    students = answers.groupby('student')
+    answers['future_answers'] = students.cumcount(ascending=False)
+    answers['nth'] = students.cumcount()
+    answers['nth_mod_10'] = answers['nth'] % 10
     answers[retention_class_name] = True
-    answers.loc[answers['future_questions'] <= 0, retention_class_name] = False
+    answers.loc[answers['future_answers'] <= 0, retention_class_name] = False
 
 
 def parse_answers(answer_csv):
@@ -70,7 +72,7 @@ def feature(answer_csv):
 
 
 def augment_features(answers):
-    is_future_question(answers)
+    answer_history(answers)
 
 
 def predict(answer_csv, is_augment_features, classifier_index):
@@ -78,7 +80,7 @@ def predict(answer_csv, is_augment_features, classifier_index):
     if is_augment_features:
         augment_features(answers)
     features, classes, feature_names = extract_features(answers, retention_class_name,
-        ignore_columns = [student_column, 'log', 'time', 'future_questions'])
+        ignore_columns = [student_column, 'log', 'time', 'future_answers'])
     feature_count = len(feature_names) / 2
     features, classes = best_feature_classes(features, classes, feature_names,
         feature_count = feature_count, is_verbose = True)
@@ -118,11 +120,11 @@ def retention_args(args):
     parser.add_argument('--classifier_index', type=int, default=0,
         help='Index of classifier to use.')
     parser.add_argument('--feature', action='store_true',
-        help='Extend table with is next question answered, time, response time and correctness difference.')
+        help='Extend table with is next answer answered, time, response time and correctness difference.')
     parser.add_argument('--funnel_csv', action='store_true',
         help='From CSV count number of students who answered at least this many times.')
     parser.add_argument('--predict', action='store_true',
-        help='Predict if a student answers a future question from features in a question.')
+        help='Predict if a student answers a future answer from features in a answer.')
     parser.add_argument('--test', action='store_true',
         help='Compare examples in %s' % documentation_path)
     parser.add_argument('answer_csv', nargs='?',
