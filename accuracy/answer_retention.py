@@ -21,7 +21,7 @@ retention_class_name = 'is_future_answer'
 
 config = {
     'convert_numeric_column': 'answer',
-    'ignore_columns': [student_column, 'log', 'time', 'future_answers'],
+    'ignore_columns': ['log', 'time'],
     'user_column': student_column,
 }
 
@@ -90,8 +90,8 @@ def predict(answer_csv, is_augment_features, classifier_index):
     if is_augment_features:
         augment_features(answers)
     features, classes, feature_names = extract_features(answers, retention_class_name,
-        ignore_columns = config['ignore_columns'])
-    feature_count = len(feature_names) / 4
+        ignore_columns = config['ignore_columns'] + [config['user_column'], 'future_answers'])
+    feature_count = max(2, len(feature_names) / 4)
     features, classes = best_feature_classes(features, classes, feature_names,
         feature_count = feature_count, is_verbose = True)
     accuracy, classifier = score(features, classes, classifier_index)
@@ -137,10 +137,18 @@ def retention_args(args):
         help='Predict if a student answers a future answer from features in a answer.')
     parser.add_argument('--test', action='store_true',
         help='Compare examples in %s' % documentation_path)
+    parser.add_argument('--user_column', default=config['user_column'], help='Custom user column.')
+    parser.add_argument('--ignore_columns', default=config['ignore_columns'], help='Comma-separated custom ignore columns.')
     parser.add_argument('answer_csv', nargs='?',
         help='CSV of student answers.')
     parsed = parser.parse_args(args)
     result = None
+    if parsed.user_column:
+        config['user_column'] = parsed.user_column
+    if parsed.ignore_columns:
+        if isinstance(parsed.ignore_columns, basestring):
+            parsed.ignore_columns = parsed.ignore_columns.split(',')
+        config['ignore_columns'] = parsed.ignore_columns
     if parsed.funnel_csv:
         result = funnel(parsed.answer_csv)
     if parsed.predict:

@@ -169,10 +169,21 @@ Other classifier indexes can also be scored:
     ...
     Gaussian Process score 0.95 features 2
 
+## Custom columns
+
+Here is an example of a custom user column and columns to ignore from the prediction.
+
+    >>> predict_custom_args = '--predict --feature test/custom_column.csv --user_column user --ignore_columns timestamp,got'.split()
+    >>> print(retention_args(predict_custom_args)) #doctest: +ELLIPSIS
+    features_classes: features: ['id', 'item', 'response_time', 'correct', 'expected', 'nth', 'is_10th']
+    ...
+    Decision tree graphed in file 'test/custom_column.predict.pdf'
+    Decision Tree score 1.0 features 2 pdf test/custom_column.predict.pdf
 
 ## Future directions
 
 How can insight be formatted in terms of original data?
+Currently it is listed by column indexes.
 
 Is this more stable when filtering out players who started in the last week of the sample?
 
