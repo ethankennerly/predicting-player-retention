@@ -17,7 +17,7 @@ path.insert(0, '..')
 from retention import write_pdf
 
 
-retention_class_name = 'is_future_answer'
+retention_class_name = 'is_future_row'
 
 config = {
     'convert_numeric_column': 'answer',
@@ -64,6 +64,13 @@ def answer_history(answers):
     answers.loc[answers['nth'] % 10 == 0, 'is_10th'] = True
     answers[retention_class_name] = True
     answers.loc[answers['future_answers'] <= 0, retention_class_name] = False
+    if 'max_nth' in config:
+        ## print('Filtering rows above %r' % config['max_nth'])
+        drop_nth(answers, config['max_nth'])
+
+
+def drop_nth(answers, max_nth):
+    answers.drop(answers.loc[answers['nth'] > max_nth].index, inplace=True)
 
 
 def parse_answers(answer_csv):
@@ -89,8 +96,9 @@ def predict(answer_csv, is_augment_features, classifier_index):
     answers = parse_answers(answer_csv)
     if is_augment_features:
         augment_features(answers)
+    ignore_columns = config['ignore_columns'] + [config['user_column'], 'future_answers']
     features, classes, feature_names = extract_features(answers, retention_class_name,
-        ignore_columns = config['ignore_columns'] + [config['user_column'], 'future_answers'])
+        ignore_columns = ignore_columns)
     feature_count = max(2, len(feature_names) / 4)
     features, classes = best_feature_classes(features, classes, feature_names,
         feature_count = feature_count, is_verbose = True)
@@ -133,6 +141,8 @@ def retention_args(args):
         help='Extend table with is next answer answered, time, response time and correctness difference.')
     parser.add_argument('--funnel_csv', action='store_true',
         help='From CSV count number of students who answered at least this many times.')
+    parser.add_argument('--max_nth', type=int,
+        help='Exclude rows above nth per user from analysis.  Useful for data that is already filtered.')
     parser.add_argument('--predict', action='store_true',
         help='Predict if a student answers a future answer from features in a answer.')
     parser.add_argument('--test', action='store_true',
@@ -143,6 +153,8 @@ def retention_args(args):
         help='CSV of student answers.')
     parsed = parser.parse_args(args)
     result = None
+    if parsed.max_nth:
+        config['max_nth'] = parsed.max_nth
     if parsed.user_column:
         config['user_column'] = parsed.user_column
     if parsed.ignore_columns:

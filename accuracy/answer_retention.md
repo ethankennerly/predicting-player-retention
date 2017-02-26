@@ -84,7 +84,7 @@ Above each 10th answer predicted a dropoff.
     >>> feature_args = '--feature test/answers_sample_small.csv'.split()
     >>> print(retention_args(feature_args))
     test/answers_sample_small.feature.csv
-    id,time,item,student,response_time,correct,answer,answer_expected,log,random,future_answers,nth,is_10th,is_future_answer
+    id,time,item,student,response_time,correct,answer,answer_expected,log,random,future_answers,nth,is_10th,is_future_row
     273951,2016-04-17 14:12:09,38,33480,57276,0,14,13,"{""client_meta"": [[38008, ""13 selected""], [39224, ""unselected""], [49135, ""1 selected""], [55376, ""14 selected""], [57276, ""finished""]], ""device"": ""desktop""}",0,2,1,False,True
     273952,2016-04-17 14:12:32,51,33480,17068,0,3,17,"{""client_meta"": [[11382, ""soft-keyboard:3""], [11382, ""3""], [17068, ""finished""]], ""device"": ""desktop""}",0,1,2,False,True
     273953,2016-04-17 14:12:45,685,33481,19878,0,95,85,"{""client_meta"": [[13513, ""9""], [18550, ""95""], [19878, ""finished""]], ""device"": ""desktop""}",0,1,1,False,True
@@ -140,7 +140,7 @@ Output:
 
     >>> predict_args = '--predict --feature test/answers_sample_small.csv'.split()
     >>> print(retention_args(predict_args)) #doctest: +ELLIPSIS
-    features_classes: features: ['id', 'item', 'response_time', 'correct', 'answer', 'answer_expected', 'random', 'nth', 'is_10th']
+    features_classes: features: ['id', 'item', 'response_time', 'correct', 'answer', 'answer_expected', 'nth']
     ...
     Decision tree graphed in file 'test/answers_sample_small.predict.pdf'
     Decision Tree score 1.0 features 2 pdf test/answers_sample_small.predict.pdf
@@ -148,7 +148,7 @@ Output:
 
     >>> predict_corrupt_args = '--predict --feature test/answers_sample.csv'.split()
     >>> print(retention_args(predict_corrupt_args)) #doctest: +ELLIPSIS
-    features_classes: features: ['id', 'item', 'response_time', 'correct', 'answer', 'answer_expected', 'random', 'nth', 'is_10th']
+    features_classes: features: ['id', 'item', 'response_time', 'correct', 'answer', 'answer_expected', 'nth', 'is_10th']
     ...
     Decision tree graphed in file 'test/answers_sample.predict.pdf'
     Decision Tree score 0.95 features 2 pdf test/answers_sample.predict.pdf
@@ -165,9 +165,35 @@ Other classifier indexes can also be scored:
 
     >>> predict_corrupt_args = '--classifier 2 --predict --feature test/answers_sample.csv'.split()
     >>> print(retention_args(predict_corrupt_args)) #doctest: +ELLIPSIS
-    features_classes: features: ['id', 'item', 'response_time', 'correct', 'answer', 'answer_expected', 'random', 'nth', 'is_10th']
+    features_classes: features: ['id', 'item', 'response_time', 'correct', 'answer', 'answer_expected', 'nth', 'is_10th']
     ...
     Gaussian Process score 0.95 features 2
+
+
+## Predict second only
+
+Here is an example of only predicting second row per user.
+
+    >>> drop_2 = read_csv('test/custom_column.csv')
+    >>> drop_nth(drop_2, 1)
+    >>> drop_2
+           id            timestamp  item   user  response_time  correct  got  \
+    0  273951  2016-04-17 14:12:09    38  33480          57276        0   14   
+    4  273955  2016-04-17 14:13:04   148  33482          12359        1   10   
+    5  273955  2016-04-17 14:13:04    38  33483          12359        1   10   
+    <BLANKLINE>
+       expected  nth  
+    0        13    1  
+    4        10    1  
+    5        10    1  
+
+    >>> predict_second_args = 'test/custom_column.csv --predict --feature --max_nth 1 --user_column user --ignore_columns timestamp,got'.split()
+    >>> print(retention_args(predict_second_args)) #doctest: +ELLIPSIS
+    features_classes: features: ['id', 'item', 'response_time', 'correct', 'expected']
+        ...
+    Decision tree graphed in file 'test/custom_column.predict.pdf'
+    Decision Tree score 0.5 features 2 pdf test/custom_column.predict.pdf
+
 
 ## Custom columns
 
@@ -175,10 +201,10 @@ Here is an example of a custom user column and columns to ignore from the predic
 
     >>> predict_custom_args = '--predict --feature test/custom_column.csv --user_column user --ignore_columns timestamp,got'.split()
     >>> print(retention_args(predict_custom_args)) #doctest: +ELLIPSIS
-    features_classes: features: ['id', 'item', 'response_time', 'correct', 'expected', 'nth', 'is_10th']
-    ...
+    features_classes: features: ['id', 'item', 'response_time', 'correct', 'expected']
+        ...
     Decision tree graphed in file 'test/custom_column.predict.pdf'
-    Decision Tree score 1.0 features 2 pdf test/custom_column.predict.pdf
+    Decision Tree score 0.5 features 2 pdf test/custom_column.predict.pdf
 
 ## Future directions
 

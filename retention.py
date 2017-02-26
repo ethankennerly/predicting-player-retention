@@ -4,6 +4,7 @@ See README.md
 
 from StringIO import StringIO
 from collections import defaultdict
+from itertools import compress
 from math import isnan
 from numpy import append, array, copy, delete
 from pandas import DataFrame, read_csv
@@ -38,7 +39,8 @@ def extract_features(frame, class_name, ignore_columns = []):
     feature_names = [column for column in frame.columns]
     feature_names.remove(class_name)
     for column in ignore_columns:
-        feature_names.remove(column)
+        if column in feature_names:
+            feature_names.remove(column)
     features = frame[feature_names].values
     classes = frame[[class_name]].values
     return features, classes, feature_names
@@ -208,11 +210,12 @@ def features_classes(aggregated, day_brackets=day_brackets, feature_count=2, is_
 def best_feature_classes(features, classes, feature_names, feature_count = 2, is_verbose = False):
     threshold = VarianceThreshold()
     features_vary = threshold.fit_transform(features)
+    feature_names = [name for name in compress(feature_names, threshold.get_support())]
     best = SelectKBest(f_classif, k=feature_count)
     best_features = best.fit_transform(features_vary, classes)
     if is_verbose:
-        print('features_classes: features: %r\n    scores %r\n    p-values %r\n    support %r' % (
-            feature_names, best.scores_, best.pvalues_, best.get_support()))
+        print('features_classes: features: %r\n    feature sample %r\n    scores %r\n    p-values %r\n    support %r' % (
+            feature_names, features_vary[0], best.scores_, best.pvalues_, best.get_support()))
     return best_features, classes
 
 
