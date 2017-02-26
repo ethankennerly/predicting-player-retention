@@ -143,7 +143,7 @@ Output:
     features_classes: features: ['id', 'item', 'response_time', 'correct', 'answer', 'answer_expected', 'random', 'nth', 'is_10th']
     ...
     Decision tree graphed in file 'test/answers_sample_small.predict.pdf'
-    Decision Tree score 1.0 features 4 pdf test/answers_sample_small.predict.pdf
+    Decision Tree score 1.0 features 2 pdf test/answers_sample_small.predict.pdf
 
 
     >>> predict_corrupt_args = '--predict --feature test/answers_sample.csv'.split()
@@ -151,7 +151,7 @@ Output:
     features_classes: features: ['id', 'item', 'response_time', 'correct', 'answer', 'answer_expected', 'random', 'nth', 'is_10th']
     ...
     Decision tree graphed in file 'test/answers_sample.predict.pdf'
-    Decision Tree score 0.95 features 4 pdf test/answers_sample.predict.pdf
+    Decision Tree score 0.95 features 2 pdf test/answers_sample.predict.pdf
 
 Drop answers that are not a numeric format.
 For example, this test sample has text as last answer instead of an integer.
@@ -167,7 +167,7 @@ Other classifier indexes can also be scored:
     >>> print(retention_args(predict_corrupt_args)) #doctest: +ELLIPSIS
     features_classes: features: ['id', 'item', 'response_time', 'correct', 'answer', 'answer_expected', 'random', 'nth', 'is_10th']
     ...
-    Gaussian Process score 0.95 features 4
+    Gaussian Process score 0.95 features 2
 
 
 ## Future directions

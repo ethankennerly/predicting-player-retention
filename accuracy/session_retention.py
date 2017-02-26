@@ -19,12 +19,6 @@ from retention import write_pdf
 
 retention_class_name = 'is_future_answer'
 
-config = {
-    'convert_numeric_column': 'answer',
-    'ignore_columns': [student_column, 'log', 'time', 'future_answers'],
-    'user_column': student_column,
-}
-
 
 def reverse(items):
     return items[::-1]
@@ -56,10 +50,9 @@ def retention_steps(retention_counts):
 
 
 def answer_history(answers):
-    students = answers.groupby(config['user_column'])
+    students = answers.groupby('student')
     answers['future_answers'] = students.cumcount(ascending=False)
-    if 'nth' not in answers.columns:
-        answers['nth'] = students.cumcount() + 1
+    answers['nth'] = students.cumcount() + 1
     answers['is_10th'] = False
     answers.loc[answers['nth'] % 10 == 0, 'is_10th'] = True
     answers[retention_class_name] = True
@@ -68,9 +61,7 @@ def answer_history(answers):
 
 def parse_answers(answer_csv):
     answers = read_csv(answer_csv)
-    convert = config['convert_numeric_column']
-    if convert in answers.columns:
-        answers[convert] = answers[convert].convert_objects(convert_numeric=True)
+    answers['answer'] = answers['answer'].convert_objects(convert_numeric=True)
     answers = answers.dropna()
     return answers
 
@@ -90,7 +81,7 @@ def predict(answer_csv, is_augment_features, classifier_index):
     if is_augment_features:
         augment_features(answers)
     features, classes, feature_names = extract_features(answers, retention_class_name,
-        ignore_columns = config['ignore_columns'])
+        ignore_columns = [student_column, 'log', 'time', 'future_answers'])
     feature_count = len(feature_names) / 4
     features, classes = best_feature_classes(features, classes, feature_names,
         feature_count = feature_count, is_verbose = True)
@@ -111,7 +102,7 @@ def save_csv(answers, answer_csv, infix):
 
 def funnel(answer_csv):
     answers = read_csv(answer_csv)
-    students = answers.groupby(config['user_column'])
+    students = answers.groupby('student')
     answer_counts = []
     funnel_properties = {}
     for student_id, student_group in students:
